@@ -1,0 +1,19 @@
+{% if keys is not None %}
+<table>
+    <tr>
+        {% for key in keys %}
+        <th>{{ key }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for row in table_rows %}
+    <tr>
+        {% for item in row %}
+        <td>{{ item }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table> 
+{% else %}
+<p>No table is available.</p>
+{% endif %}
