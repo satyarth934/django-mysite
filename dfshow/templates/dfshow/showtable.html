@@ -1,4 +1,8 @@
 {% if keys is not None %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'stylesheets/tables.css' %}">
+
 <table>
     <tr>
         {% for key in keys %}
