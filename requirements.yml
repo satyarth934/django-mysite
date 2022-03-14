@@ -27,4 +27,3 @@ dependencies:
     - pytz==2021.3
     - six==1.16.0
     - sqlparse==0.4.2
-prefix: /opt/anaconda3/envs/django_venv
