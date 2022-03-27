@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 from django.http import Http404, HttpResponse
-# from rdkit import Chem
-# from rdkit.Chem import Draw, rdFMCS, AllChem
+from rdkit import Chem
+from rdkit.Chem import Draw, rdFMCS, AllChem
 
 # from django.utils.http import urlunquote
 from urllib.parse import unquote as urlunquote
