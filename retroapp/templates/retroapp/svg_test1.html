@@ -1,0 +1,19 @@
+{% load domainFilters %}
+
+{% if mols is not None %}
+<table>
+    {% for mol in mols %}
+    <tr>
+        <td>
+            <!-- {{ mol }} -->
+            <img style="width: 100%" alt="alt text" src="/renderer/{{ mol | urlq }}/243" />
+        </td>
+    </tr>
+    <tr>
+        <td>"-+-+-"</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No table is available.</p>
+{% endif %}
