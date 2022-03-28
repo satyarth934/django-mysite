@@ -1,0 +1,41 @@
+table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+  border-collapse: collapse;
+  font-family:  'calibri', sans-serif;
+}
+
+table {
+  text-align: center;
+  color:  #13334c;
+  border:  2px solid #005792;
+  box-sizing:  border-box;
+}
+
+th {
+  border-bottom:  2px solid #005792;
+  background-color:  #95cdb3;
+  color: #005792;
+  font-weight:  bold;
+  text-align:  center;
+  padding:  15px;
+  box-sizing:  border-box;
+}
+
+tr {
+  box-sizing:  border-box;
+}
+
+td {
+  text-align:  center;
+  border:  1px solid #005792;
+  background-color: #ffffdd;
+  color:  #1796a9;
+  padding:  15px;
+  box-sizing:  border-box;
+}
