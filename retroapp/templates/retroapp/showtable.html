@@ -1,0 +1,36 @@
+{% load domainFilters %}
+
+<table>
+    <tr>
+        {% for k in df.keys %}
+        <th>
+            {{ k | upper | replace:"_| "}}
+        </th>
+        {% endfor %}
+    </tr>
+
+    {% for i, r in df.iterrows %}
+    <tr>
+        <td>
+            <img style="width: 100%" 
+                    alt="alt text" 
+                    data-smilesq="{{ r.smiles_str | urlq }}" 
+                    data-smiles="{{ r.smiles_str }}"
+                    src="/renderer/{{ r.smiles_str | urlq }}/243" />
+
+        </td>
+
+        <td>
+            {{ r.smiles_str }}
+        </td>
+
+        <td>
+            {{ r.sim_metric }}
+        </td>
+
+        <td>
+            {{ r.big_ugly_str }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
