@@ -5,7 +5,7 @@
 
 <table>
     <tr>
-        {% for k in df.keys %}
+        {% for k in keys %}
         <th>
             {{ k | upper | replace:"_| "}}
         </th>
@@ -17,22 +17,22 @@
         <td>
             <img style="width: 100%" 
                     alt="alt text" 
-                    data-smilesq="{{ r.smiles_str | urlq }}" 
-                    data-smiles="{{ r.smiles_str }}"
-                    src="/renderer/{{ r.smiles_str | urlq }}/243" />
+                    data-smilesq="{{ r.SMILES | urlq }}" 
+                    data-smiles="{{ r.SMILES }}"
+                    src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" />
 
         </td>
 
         <td>
-            {{ r.smiles_str }}
+            {{ r.SMILES }}
         </td>
 
         <td>
-            {{ r.sim_metric }}
+            {{ r.SCORE }}
         </td>
 
         <td>
-            {{ r.big_ugly_str }}
+            {{ r.DESIGN }}
         </td>
     </tr>
     {% endfor %}

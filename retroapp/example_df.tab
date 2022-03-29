@@ -1,0 +1,6 @@
+SMILES	SCORE	DESIGN
+C[C@@H](O)CC(=O)O	0.8	[["AT{'substrate': 'Malonyl-CoA'}"], ["AT{'substrate': 'Malonyl-CoA'}", "KR{'type': 'B'}"]]
+CC[C@H](C)CCC(=O)O	0.777777778	"[[""AT{'substrate': 'Malonyl-CoA'}""],
+ [""AT{'substrate': 'Methylmalonyl-CoA'}"", ""KR{'type': 'B1'}"", 'DH{}', 'ER{}'],
+ [""AT{'substrate': 'Malonyl-CoA'}"", ""KR{'type': 'B'}"", 'DH{}', 'ER{}']]"
+CC(=O)CC(=O)O	0.428571429	[["AT{'substrate': 'Malonyl-CoA'}"], ["AT{'substrate': 'Malonyl-CoA'}"]]
