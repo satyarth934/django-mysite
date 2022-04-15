@@ -1,0 +1,15 @@
+body {
+  width: 30%;
+  margin: 120px auto;
+  font-size: 20px;
+}
+
+body div {
+  margin: 20px;
+  color:  #333;
+}
+
+body input {
+  width: 40%;
+  margin: 0 12px;
+}
