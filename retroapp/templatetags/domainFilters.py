@@ -1,5 +1,6 @@
 from django import template
-from django.utils.http import urlquote
+# from django.utils.http import urlquote
+from urllib.parse import quote as urlquote
 from rdkit import Chem
 import re
 
