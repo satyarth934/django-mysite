@@ -35,7 +35,7 @@ ALLOWED_HOSTS = ['10.0.0.159', 'localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'dfshow.apps.DfshowConfig',
     'polls.apps.PollsConfig',
-    # 'retroapp.apps.RetroappConfig',
+    'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
     'django.contrib.auth',
