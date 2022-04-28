@@ -26,7 +26,12 @@ SECRET_KEY = 'django-insecure-x%7f4w%1en)85*1%!*68uzuik5wka%-2=gb7)@icjdr!fd1m%4
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['10.0.0.159', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    '10.0.0.159', 
+    'localhost', 
+    '127.0.0.1', 
+    'molinv.molinv.development.svc.spin.nersc.org',
+]
 
 
 
