@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.shortcuts import render
 
 from django.http import Http404, HttpResponse
@@ -15,6 +16,8 @@ from io import BytesIO
 import pandas as pd
 from django.template import loader
 
+import retrotide
+
 
 # Create your views here.
 def index(request):
@@ -22,21 +25,21 @@ def index(request):
 
 
 def retrotideAPI_dummy(request, smiles):
-    # smiles_strs = ['CCCO','C=CCC(CC)CCC','COCC=O']
-    # sim_metric_vals = [12.34, 23.45, 34.56]
-    # big_ugly_strs = ['lol1', 'lol2', 'lol3']
-
-    # retro_df = {
-    #     "rendered_mol": smiles_strs,
-    #     "smiles_str": smiles_strs,
-    #     "sim_metric": sim_metric_vals,
-    #     "big_ugly_str": big_ugly_strs,
-    # }
-    # return pd.DataFrame(retro_df)
-
     example_df = pd.read_csv("retroapp/example_df.tab", delimiter="\t")
-
     return example_df
+
+
+def retrotide_call(smiles):
+    designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
+
+    df_dict = defaultdict(list)
+
+    for i in range(len(designs[-1])):
+        df_dict["SMILES"].append(Chem.MolToSmiles(designs[-1][i][2]))
+        df_dict["SCORE"].append(designs[-1][i][1])
+        df_dict["DESIGN"].append(designs[-1][i][0].modules)
+
+    return pd.DataFrame(df_dict)
 
 
 def showtable(request, retro_df, width=243):
@@ -55,7 +58,8 @@ def retrotide_usage(request, smiles, width=243):
     # http_page_str += f"width: {width}<br>"
 
     # retrotide API call
-    retro_df = retrotideAPI_dummy(request, smiles)
+    # retro_df = retrotideAPI_dummy(request, smiles)
+    retro_df = retrotide_call(smiles)
     print(retro_df)         # DELETE: only for debugging purposes
 
     # show table for the return data frame from the API call
