@@ -1,5 +1,5 @@
 body {
-  width: 30%;
+  width: 45%;
   margin: 120px auto;
   font-size: 20px;
 }
@@ -14,7 +14,15 @@ body input {
   margin: 0 12px;
 }
 
-.login div {
+.selectHolder {
+  margin:  0px;
+}
+
+.selectHolder div {
+  display:  inline-block;
+}
+
+.search div {
   background-color: #005f5c;
   color: #dfdfdf;
   border-radius:  6px;
