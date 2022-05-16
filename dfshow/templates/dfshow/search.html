@@ -1,0 +1,35 @@
+<html>
+  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/base.css">
+  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/search.css">
+
+  <!-- this include tag should be at the top of each page to add the header above the body-->
+  {% include "header.html" %}
+  <body>
+    <p>Enter molecule SMILES data and property model</p>
+    <div>
+      SMILES: <input class="smilesInput" type="text" />
+    </div>
+    <div class="selectHolder">
+      <div>
+        <select class="searchSelect">
+          <option>-------</option>
+          <option>Cetane Number</option>
+          <option>Research Octane Number</option>
+          <option>Melting Point</option>
+          <option>Flash Point</option>
+          <option>Yield Sooting Index</option>
+          <option>H1 Receptor pKd</option>
+          <option>M2 Receptor pKd</option>
+        </select>
+      </div>
+      <div>
+        : <input class="propertyInput" type="float" />
+      </div>
+    </div>
+    <div class="submitButton">
+      <a class="search" href="./faketabledata.html">
+        <div>Search</div>
+      </a>
+    </div>
+  </body>
+</html>

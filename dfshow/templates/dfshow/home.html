@@ -1,0 +1,21 @@
+<html>
+  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/base.css">
+  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/home.css">
+
+  <!-- this include tag should be at the top of each page to add the header above the body-->
+  {% include "header.html" %}
+  <body>
+    <p>Please login with your LDAP username / password.</p>
+    <div>
+      Username: <input class="usernameInput" type="text" />
+    </div>
+    <div>
+      Password: <input class="passwordInput" type="password" />
+    </div>
+    <div class="submitButton">
+      <a class="login">
+        <div>Login</div>
+      </a>
+    </div>
+  </body>
+</html>
