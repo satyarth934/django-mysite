@@ -1,6 +1,7 @@
 <html>
-  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/base.css">
-  <link rel="stylesheet" type="text/css" href="../../static/stylesheets/search.css">
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/base.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/search.css' %}">
 
   <!-- this include tag should be at the top of each page to add the header above the body-->
   {% include "header.html" %}

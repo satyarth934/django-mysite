@@ -1,7 +1,7 @@
-<!-- right now these are relative links but can be replaced by static links as in faketabledata -->
+{% load static %}
 
-<link rel="stylesheet" type="text/css" href="../../static/stylesheets/base.css">
-<link rel="stylesheet" type="text/css" href="../../static/stylesheets/header.css">
+<link rel="stylesheet" type="text/css" href="{% static 'stylesheets/base.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'stylesheets/header.css' %}">
 
 <header>
   <div class="logo">Moleculator</div>
