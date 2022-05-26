@@ -1,0 +1,33 @@
+<html>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/base.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/search.css' %}">
+
+  <!-- this include tag should be at the top of each page to add the header above the body-->
+  {% include "./header.html" %}
+  <body>
+    <p>Enter molecule SMILES data and property model</p>
+    <div>
+      SMILES: <input class="smilesInput" type="text" />
+    </div>
+    <div class="selectHolder">
+      <div>
+        <select class="searchSelect">
+          <option>Select Property</option>
+          <option>-------</option>
+          {% for property in properties %}
+          <option> {{ property }} </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        : <input class="propertyInput" type="float" />
+      </div>
+    </div>
+    <div class="submitButton">
+      <a class="search" href="./faketabledata.html">
+        <div>Search</div>
+      </a>
+    </div>
+  </body>
+</html>
