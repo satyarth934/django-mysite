@@ -5,6 +5,10 @@
 
 <table>
     <tr>
+        <th>
+            SNo
+        </th>
+
         {% for k in keys %}
         <th>
             {{ k | upper | replace:"_| "}}
@@ -15,7 +19,7 @@
     {% for i, r in df.iterrows %}
     <tr>
         <td>
-            {{ r.SNo }}
+            {{ i }}
         </td>
 
         <td>

@@ -35,7 +35,6 @@ def retrotide_call(smiles):
     df_dict = defaultdict(list)
 
     for i in range(len(designs[-1])):
-        df_dict["SNo"].append(i + 1)
         df_dict["SMILES"].append(Chem.MolToSmiles(designs[-1][i][2]))
         df_dict["SCORE"].append(designs[-1][i][1])
         df_dict["DESIGN"].append(designs[-1][i][0].modules)
