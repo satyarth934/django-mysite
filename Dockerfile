@@ -46,8 +46,14 @@ RUN apt-get update \
 ADD ./requirements.txt /root/
 RUN pip3 install -U pip setuptools
 RUN pip3 install -r requirements.txt
-# RUN pip3 install django
 
+# Install RetroTide API
+COPY retrotide-master /root/retrotide
+RUN cd /root/retrotide && \
+    pip3 install . && \
+    cd /root
+
+# Clone Website code
 RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
 WORKDIR /root/django-mysite
 
