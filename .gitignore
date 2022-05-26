@@ -655,3 +655,7 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,visualstudio,visualstudiocode,sublimetext,python,vim,jupyternotebooks
 
 
+
+# Custom files
+retrotide-master
+
