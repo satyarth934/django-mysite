@@ -15,6 +15,10 @@
     {% for i, r in df.iterrows %}
     <tr>
         <td>
+            {{ r.SNo }}
+        </td>
+
+        <td>
             <img style="width: 100%" 
                     alt="alt text" 
                     data-smilesq="{{ r.SMILES | urlq }}" 
