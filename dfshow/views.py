@@ -35,3 +35,28 @@ def showtable(request):
 # http://127.0.0.1:8000/dfshow/showtablejson/
 def showtablejson(request):
     return JsonResponse(df.to_json(), safe=False)
+
+
+def home(request):
+    template = loader.get_template("dfshow/home.html")
+    context = {}
+    rendered_str = template.render(context, request)
+    return HttpResponse(rendered_str)
+
+
+def search(request):
+    template = loader.get_template("dfshow/search.html")
+    context = {
+            "properties": [
+                "Cetane Number",
+                "Research Octane Number",
+                "Melting Point",
+                "Flash Point",
+                "Yield Sooting Index",
+                "H1 Receptor pKd",
+                "M2 Receptor pKd",
+            ]
+        }
+    rendered_str = template.render(context, request)
+
+    return HttpResponse(rendered_str)

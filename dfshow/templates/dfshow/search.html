@@ -4,7 +4,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/search.css' %}">
 
   <!-- this include tag should be at the top of each page to add the header above the body-->
-  {% include "header.html" %}
+  {% include "./header.html" %}
   <body>
     <p>Enter molecule SMILES data and property model</p>
     <div>
@@ -13,14 +13,11 @@
     <div class="selectHolder">
       <div>
         <select class="searchSelect">
+          <option>Select Property</option>
           <option>-------</option>
-          <option>Cetane Number</option>
-          <option>Research Octane Number</option>
-          <option>Melting Point</option>
-          <option>Flash Point</option>
-          <option>Yield Sooting Index</option>
-          <option>H1 Receptor pKd</option>
-          <option>M2 Receptor pKd</option>
+          {% for property in properties %}
+          <option> {{ property }} </option>
+          {% endfor %}
         </select>
       </div>
       <div>
