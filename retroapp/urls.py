@@ -4,5 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('home', views.home, name='home'),
+    path('search', views.search, name='search'),
     re_path(r'(\S+)/(\d{1,4})$', views.retrotide_usage, name='smilestr'),
 ]

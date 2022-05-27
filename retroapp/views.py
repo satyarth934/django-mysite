@@ -24,6 +24,31 @@ def index(request):
     return HttpResponse("You're at retroapp. Append smile string in the URL to invoke the retrotide API.")
 
 
+def home(request):
+    template = loader.get_template("dfshow/home.html")
+    context = {}
+    rendered_str = template.render(context, request)
+    return HttpResponse(rendered_str)
+
+
+def search(request):
+    template = loader.get_template("dfshow/search.html")
+    context = {
+            "properties": [
+                "Cetane Number",
+                "Research Octane Number",
+                "Melting Point",
+                "Flash Point",
+                "Yield Sooting Index",
+                "H1 Receptor pKd",
+                "M2 Receptor pKd",
+            ]
+        }
+    rendered_str = template.render(context, request)
+
+    return HttpResponse(rendered_str)
+
+
 def retrotideAPI_dummy(request, smiles):
     example_df = pd.read_csv("retroapp/example_df.tab", delimiter="\t")
     return example_df
@@ -42,9 +67,10 @@ def retrotide_call(smiles):
     return pd.DataFrame(df_dict)
 
 
-def showtable(request, retro_df, width=243):
+def showtable(request, query, retro_df, width=243):
     template = loader.get_template("retroapp/showtable.html")
     context = {
+        "query": query,
         "keys": ["Rendered Molecule", *retro_df.keys()],
         "df": retro_df,
         "width": width,
@@ -63,6 +89,6 @@ def retrotide_usage(request, smiles, width=243):
     print(retro_df)         # DELETE: only for debugging purposes
 
     # show table for the return data frame from the API call
-    table_rendered_str = showtable(request, retro_df, width)
+    table_rendered_str = showtable(request, smiles, retro_df, width)
     
     return HttpResponse(table_rendered_str)
