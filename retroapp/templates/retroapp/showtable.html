@@ -1,39 +1,61 @@
 {% load domainFilters %}
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'stylesheets/tables.css' %}">
+<html>
+    {% include "./header.html" %}
 
-<table>
-    <tr>
-        {% for k in keys %}
-        <th>
-            {{ k | upper | replace:"_| "}}
-        </th>
-        {% endfor %}
-    </tr>
+    <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/tables.css' %}">
+    
+    <table style="margin-left:auto;margin-right:auto;">
+        <tr>
+            <td style="color: black;">
+                Query
+            </td>
 
-    {% for i, r in df.iterrows %}
-    <tr>
-        <td>
-            <img style="width: 100%" 
-                    alt="alt text" 
-                    data-smilesq="{{ r.SMILES | urlq }}" 
-                    data-smiles="{{ r.SMILES }}"
+            <td>
+                <img style="width: 100%" alt="alt text" data-smilesq="{{ query | urlq }}" data-smiles="{{ query }}"
+                    src="/renderer/{{ query | urlq }}/{{ width }}" />
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th>
+                SNo
+            </th>
+    
+            {% for k in keys %}
+            <th>
+                {{ k | upper | replace:"_| "}}
+            </th>
+            {% endfor %}
+        </tr>
+    
+        {% for i, r in df.iterrows %}
+        <tr>
+            <td>
+                {{ i }}
+            </td>
+    
+            <td>
+                <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
                     src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" />
-
-        </td>
-
-        <td>
-            {{ r.SMILES }}
-        </td>
-
-        <td>
-            {{ r.SCORE }}
-        </td>
-
-        <td>
-            {{ r.DESIGN }}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    
+            </td>
+    
+            <td>
+                {{ r.SMILES }}
+            </td>
+    
+            <td>
+                {{ r.SCORE }}
+            </td>
+    
+            <td>
+                {{ r.DESIGN }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</html>
