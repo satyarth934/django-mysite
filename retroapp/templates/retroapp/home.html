@@ -1,11 +1,10 @@
-{% load static %}
-
 <html>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+
   <!-- this include tag should be at the top of each page to add the header above the body-->
-  {% include "./header.html" %}
-    
-  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/base.css' %}">
-  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/home.css' %}">
+  {% include "retroapp/header.html" %}
 
   <body>
     <p>Please login with your LDAP username / password.</p>

@@ -1,34 +1,49 @@
-{% load static %}
-<html>
-  <!-- this include tag should be at the top of each page to add the header above the body-->
-  {% include "./header.html" %}
-  
-  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/base.css' %}">
-  <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/search.css' %}">
+<!-- CURRENTLY NOT IN USE -->
 
-  <body>
-    <p>Enter molecule SMILES data and property model</p>
-    <div>
-      SMILES: <input class="smilesInput" type="text" />
-    </div>
-    <div class="selectHolder">
-      <div>
-        <select class="searchSelect">
-          <option>Select Property</option>
-          <option>-------</option>
-          {% for property in properties %}
-          <option> {{ property }} </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        : <input class="propertyInput" type="float" />
-      </div>
-    </div>
-    <div class="submitButton">
-      <a class="search" href="./faketabledata.html">
-        <div>Search</div>
-      </a>
-    </div>
-  </body>
+
+<html>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}">
+
+    <!-- this include tag should be at the top of each page to add the header above the body-->
+    {% include "retroapp/header.html" %}
+
+    <body>
+        <p>Enter molecule SMILES data and property model</p>
+        <div>
+            SMILES: <input class="smilesInput" type="text" />
+        </div>
+        <div class="selectHolder">
+            <div>
+                <select class="searchSelect">
+                    <option>Select Property</option>
+                    <option>-------</option>
+                    {% for property in properties %}
+                    <option> {{ property }} </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br>
+            <div>
+                Min: <input class="propertyMinimum" type="float" />
+            </div>
+            <div>
+                Max: <input class="propertyMaximum" type="float" />
+            </div>
+            <div>
+                <select class="sortSelect">
+                    <option>Select Sorting</option>
+                    <option>-------</option>
+                    <option> Higher is better </option>
+                    <option> Lower is better </option>
+                </select>
+            </div>
+        </div>
+        <div class="submitButton">
+            <a class="search" href="./faketabledata.html">
+                <div>Search</div>
+            </a>
+        </div>
+    </body>
 </html>
