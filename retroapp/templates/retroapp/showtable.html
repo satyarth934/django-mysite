@@ -4,7 +4,7 @@
 <html>
     {% include "./header.html" %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'stylesheets/tables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tables.css' %}">
     
     <table style="margin-left:auto;margin-right:auto;">
         <tr>
@@ -49,9 +49,13 @@
             </td>
     
             <td>
-                {{ r.SCORE }}
+                {{ r.Retrotide_Similarity_SCORE|floatformat:2 }}
             </td>
     
+            <td>
+                {{ r.RON }}
+            </td>
+            
             <td>
                 {{ r.DESIGN }}
             </td>
