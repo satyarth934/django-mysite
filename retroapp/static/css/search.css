@@ -1,0 +1,32 @@
+body {
+  /* width: 45%; */
+  margin: 120px auto;
+  font-size: 20px;
+}
+
+body div {
+  /* margin: 20px; */
+  color:  #333;
+}
+
+body input {
+  width: 40%;
+  margin: 5 12px;
+}
+
+.selectHolder {
+  margin:  1%;
+}
+
+.selectHolder div {
+  display:  inline-block;
+}
+
+.search div {
+  background-color: #005f5c;
+  color: #dfdfdf;
+  border-radius:  6px;
+  width:  60px;
+  padding:  6px 12px;
+  text-align:  center;
+}
