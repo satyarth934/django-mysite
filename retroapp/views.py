@@ -130,7 +130,11 @@ def retrotide_usage(request, smiles, width=243):
     return HttpResponse(table_rendered_str)
 
 
-
+def about(request):
+    template = loader.get_template("retroapp/about.html")
+    context = {}
+    rendered_str = template.render(context, request)
+    return HttpResponse(rendered_str)
 
 
 
