@@ -6,9 +6,12 @@
 <header>
   <div class="logo">Moleculator</div>
   <div class="navLinks">
-    <a href="./home.html">Home/Login</a>
-    <a href="./search.html">Define Target Molecule</a>
+    <!-- <a href="./home.html">Home/Login</a> -->
+    <a href="{% url 'home' %}">Home/Login</a>
+    <!-- <a href="./search.html">Define Target Molecule</a> -->
+    <a href="{% url 'search' %}">Define Target Molecule</a>
     <a>PKS Engine</a>
-    <a href="./home.html">About</a>
+    <!-- <a href="./home.html">About</a> -->
+    <a href="{% url 'about' %}">About</a>
   </div>
 </header>
