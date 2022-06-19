@@ -16,7 +16,7 @@ from io import BytesIO
 
 import pandas as pd
 from django.template import loader
-from retroapp.constants import ASCENDING
+from retroapp.constants import ASCENDING, NO_SORT
 
 import retrotide
 from pprint import pprint
@@ -88,7 +88,8 @@ def pks(request):
         retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
 
         sort_optn = search_query["sorting_mode"]
-        retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING))
+        if sort_optn != NO_SORT:
+            retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING))
 
         # Render the filtered dataframe to a webpage
         table_rendered_str = showtable(
@@ -110,16 +111,16 @@ def about(request):
     return HttpResponse(rendered_str)
 
 
-def retrotide_usage(request, query_dict, width=243):
+def retrotide_usage(request, smiles, width=243):
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
-    retro_df = retrotide_call(smiles=query_dict["smiles_string"])
+    retro_df = retrotide_call(smiles=smiles)
     print(retro_df)         # DELETE: only for debugging purposes
 
     # show table for the return data frame from the API call
     table_rendered_str = showtable(
         request, 
-        query_dict=smiles, 
+        query_dict={"smiles_string": smiles}, 
         retro_df=retro_df, 
         width=width
     )
