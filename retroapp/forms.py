@@ -50,6 +50,7 @@ class SearchForm(forms.Form):
             raise ValidationError(_("Invalid property selected."))
 
         return selected_property
+
         
     def clean_molecular_property_min(self):
         mol_prop = self.cleaned_data['molecular_property']
@@ -63,6 +64,7 @@ class SearchForm(forms.Form):
         
         return self.cleaned_data['molecular_property_min']
 
+
     def clean_molecular_property_max(self):
         mol_prop = self.cleaned_data['molecular_property']
         mol_prop_max = self.cleaned_data['molecular_property_max']
@@ -74,6 +76,7 @@ class SearchForm(forms.Form):
             raise ValidationError(_(f"Invalid maximum value entered for the property. The value cannot be lower than {constants.MOLECULE_PROPERTIES[mol_prop]['min']}."))
         
         return self.cleaned_data['molecular_property_max']
+
 
     def clean_sorting_mode(self):
         mode = self.fields['sorting_mode'].choices[int(self.cleaned_data['sorting_mode'])][1]

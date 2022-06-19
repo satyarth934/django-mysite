@@ -66,3 +66,8 @@ def isnumeric(value):
 @register.filter
 def isfloat(value):
     return isinstance(value, float)
+
+
+@register.filter
+def islist(value):
+    return isinstance(value, list)

@@ -31,7 +31,10 @@ MOLECULE_PROPERTIES = {
     },
 }
 
+ASCENDING = "Lower is better"
+DESCENDING = "Higher is better"
+
 SORTING_OPTIONS = [
-    "Higher is better",
-    "Lower is better",
+    ASCENDING,
+    DESCENDING,
 ]

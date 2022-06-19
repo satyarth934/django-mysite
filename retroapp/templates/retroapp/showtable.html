@@ -8,68 +8,65 @@
 
 <table style="margin-left:auto;margin-right:auto;">
     <tr>
-        <td style="color: black;">
-            Query
-        </td>
-
-        <td>
-            <img style="width: 100%" alt="alt text" data-smilesq="{{ query | urlq }}" data-smiles="{{ query }}"
-                src="/renderer/{{ query | urlq }}/{{ width }}" />
-        </td>
+        {% for k, v in query_dict.items %}
+            <td style="color: black;">
+                {{ k }}
+            </td>
+        {% endfor %}
+    </tr>
+        
+    <tr>
+        {% for k, v in query_dict.items %}
+            <td>
+                {% if k == "smiles_string" %}
+                    <img style="width: 100%" alt="alt text" data-smilesq="{{ v | urlq }}" data-smiles="{{ v }}"
+                    src="/renderer/{{ v | urlq }}/{{ width }}" title={{ v }} />
+                {% else %}
+                    {{ v }}
+                {% endif %}
+            </td>
+        {% endfor %}
     </tr>
 </table>
 
-<table>
+<table style="width: 100%;">
     <tr>
         <th>
             SNo
         </th>
 
         {% for k in keys %}
-        <th>
-            {{ k | upper | replace:"_| "}}
-        </th>
+            <th>
+                {{ k | upper | replace:"_| "}}
+            </th>
         {% endfor %}
     </tr>
 
     {% for i, r in df.iterrows %}
-    <tr>
-        <td>
-            {{ i | add:"+1" }}
-        </td>
+        <tr>
+            <td>
+                {{ i | add:"+1" }}
+            </td>
 
-        <td>
-            <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
-                src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" />
+            <td>
+                <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
+                    src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" title={{ r.SMILES }} />
+            </td>
 
-        </td>
-
-        <!-- <td>
-            {{ r.SMILES }}
-        </td>
-
-        <td>
-            {{ r.Retrotide_Similarity_SCORE|floatformat:2 }}
-        </td>
-
-        <td>
-            {{ r.RON }}
-        </td>
-
-        <td>
-            {{ r.DESIGN }}
-        </td> -->
-
-        {% for data_item in r %}
-        <td>
-            {% if data_item|isfloat %}
-                {{ data_item|sigfig }}
-            {% else %}
-                {{ data_item }}
-            {% endif %}
-        </td>
-        {% endfor %}
-    </tr>
+            {% for data_item in r %}
+                <td>
+                    {% if data_item|isfloat %}
+                        {{ data_item|sigfig }}
+                    {% elif data_item|islist %}
+                        <div title="{{ data_item }}">
+                            Hover here to see the full data
+                        </div>
+                    {% else %}
+                        {{ data_item }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
     {% endfor %}
 </table>
 

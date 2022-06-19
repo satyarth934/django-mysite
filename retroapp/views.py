@@ -16,6 +16,7 @@ from io import BytesIO
 
 import pandas as pd
 from django.template import loader
+from retroapp.constants import ASCENDING
 
 import retrotide
 from pprint import pprint
@@ -49,7 +50,6 @@ def home(request):
 
 
 def search(request):
-
     # If this is a GET (or any other method) create the default form.
     if request.method != "POST":
         form = SearchForm(
@@ -61,7 +61,6 @@ def search(request):
                 'sorting_mode': "Higher is better",
             }
         )
-
         context = {
             'form': form,
         }
@@ -69,45 +68,39 @@ def search(request):
     
     else:
         form = SearchForm(request.POST)
-
         if form.is_valid():
-            # redirect to a new URL:
-            # print(f"{form.cleaned_data = }")
-            # return JsonResponse(form.cleaned_data)
-            
             request.session['_search_query'] = form.cleaned_data
             return redirect('pks', permanent=False)
 
 
 def pks(request):
-    print("--- Inside PKS ---")
-
     if "_search_query" in request.session:
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
         search_query = request.session.get('_search_query')
-        print(search_query)
 
         # Calling retrotide API
         retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=search_query["molecular_property"])
 
-        # Filtering based on search query
+        # Filtering and sorting based on search query
+        min_val = search_query["molecular_property_min"]
+        max_val = search_query["molecular_property_max"]
+        mol_property = search_query["molecular_property"]
+        retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
 
+        sort_optn = search_query["sorting_mode"]
+        retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING))
 
-        table_rendered_str = showtable(request, search_query["smiles_string"], retro_df)
+        # Render the filtered dataframe to a webpage
+        table_rendered_str = showtable(
+            request, 
+            query_dict=search_query, 
+            retro_df=retro_df,
+        )
         return HttpResponse(table_rendered_str)
 
     else:
         warnings.warn("404: No search query!")
         return HttpResponse("404: No search query!")
-
-    # if request.method != "POST":
-    #     warnings.warn("404: No search query!")
-    #     return HttpResponse("404: No search query!")
-    # else:
-    #     form = SearchForm(request.session.get('_old_post'))
-    #     print("--- Inside PKS ---")
-    #     print(form.cleaned_data)
-    #     return HttpResponse("YAYY!")
         
 
 def about(request):
@@ -117,14 +110,19 @@ def about(request):
     return HttpResponse(rendered_str)
 
 
-def retrotide_usage(request, smiles, width=243):
+def retrotide_usage(request, query_dict, width=243):
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
-    retro_df = retrotide_call(smiles)
+    retro_df = retrotide_call(smiles=query_dict["smiles_string"])
     print(retro_df)         # DELETE: only for debugging purposes
 
     # show table for the return data frame from the API call
-    table_rendered_str = showtable(request, smiles, retro_df, width)
+    table_rendered_str = showtable(
+        request, 
+        query_dict=smiles, 
+        retro_df=retro_df, 
+        width=width
+    )
     
     return HttpResponse(table_rendered_str)
 
@@ -154,10 +152,10 @@ def retrotide_call(smiles, properties=None):
     return pd.DataFrame(df_dict)
 
 
-def showtable(request, query, retro_df, width=243):
+def showtable(request, query_dict, retro_df, width=243):
     template = loader.get_template("retroapp/showtable.html")
     context = {
-        "query": query,
+        "query_dict": query_dict,
         "keys": ["Rendered Molecule", *retro_df.keys()],
         "df": retro_df,
         "width": width,
@@ -175,9 +173,9 @@ def showtable(request, query, retro_df, width=243):
 
 
 
-# vvvvvvvv
-# ARCHIVE
-# vvvvvvvv
+###########
+# Archive #
+###########
 
 def retrotideAPI_dummy(request, smiles):
     example_df = pd.read_csv("retroapp/example_df.tab", delimiter="\t")
