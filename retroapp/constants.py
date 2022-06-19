@@ -1,31 +1,33 @@
+import numpy as np
+
 MOLECULE_PROPERTIES = {
     "Cetane Number": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "Research Octane Number": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "Melting Point": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "Flash Point": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "Yield Sooting Index": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "H1 Receptor pKd": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
     "M2 Receptor pKd": {
-        "min": 0,
-        "max": 100,
+        "min": -np.inf,
+        "max": np.inf,
     },
 }
 

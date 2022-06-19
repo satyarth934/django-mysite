@@ -20,7 +20,7 @@ class TestForm(forms.Form):
 
 
 class SearchForm(forms.Form):
-    SMILES_string = forms.CharField(
+    smiles_string = forms.CharField(
         # help_text="Enter the SMILES string"
     )
     molecular_property = forms.ChoiceField(
@@ -39,8 +39,8 @@ class SearchForm(forms.Form):
     )
 
 
-    def clean_SMILES_string(self):
-        return self.cleaned_data['SMILES_string']
+    def clean_smiles_string(self):
+        return self.cleaned_data['smiles_string']
 
 
     def clean_molecular_property(self):

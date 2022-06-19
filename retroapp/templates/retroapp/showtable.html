@@ -2,64 +2,75 @@
 {% load static %}
 
 <html>
-    {% include "./header.html" %}
+{% include "./header.html" %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/tables.css' %}">
-    
-    <table style="margin-left:auto;margin-right:auto;">
-        <tr>
-            <td style="color: black;">
-                Query
-            </td>
+<link rel="stylesheet" type="text/css" href="{% static 'css/tables.css' %}">
 
-            <td>
-                <img style="width: 100%" alt="alt text" data-smilesq="{{ query | urlq }}" data-smiles="{{ query }}"
-                    src="/renderer/{{ query | urlq }}/{{ width }}" />
-            </td>
-        </tr>
-    </table>
+<table style="margin-left:auto;margin-right:auto;">
+    <tr>
+        <td style="color: black;">
+            Query
+        </td>
 
-    <table>
-        <tr>
-            <th>
-                SNo
-            </th>
-    
-            {% for k in keys %}
-            <th>
-                {{ k | upper | replace:"_| "}}
-            </th>
-            {% endfor %}
-        </tr>
-    
-        {% for i, r in df.iterrows %}
-        <tr>
-            <td>
-                {{ i }}
-            </td>
-    
-            <td>
-                <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
-                    src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" />
-    
-            </td>
-    
-            <td>
-                {{ r.SMILES }}
-            </td>
-    
-            <td>
-                {{ r.Retrotide_Similarity_SCORE|floatformat:2 }}
-            </td>
-    
-            <td>
-                {{ r.RON }}
-            </td>
-            
-            <td>
-                {{ r.DESIGN }}
-            </td>
-        </tr>
+        <td>
+            <img style="width: 100%" alt="alt text" data-smilesq="{{ query | urlq }}" data-smiles="{{ query }}"
+                src="/renderer/{{ query | urlq }}/{{ width }}" />
+        </td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th>
+            SNo
+        </th>
+
+        {% for k in keys %}
+        <th>
+            {{ k | upper | replace:"_| "}}
+        </th>
         {% endfor %}
-    </table>
+    </tr>
+
+    {% for i, r in df.iterrows %}
+    <tr>
+        <td>
+            {{ i | add:"+1" }}
+        </td>
+
+        <td>
+            <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
+                src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" />
+
+        </td>
+
+        <!-- <td>
+            {{ r.SMILES }}
+        </td>
+
+        <td>
+            {{ r.Retrotide_Similarity_SCORE|floatformat:2 }}
+        </td>
+
+        <td>
+            {{ r.RON }}
+        </td>
+
+        <td>
+            {{ r.DESIGN }}
+        </td> -->
+
+        {% for data_item in r %}
+        <td>
+            {% if data_item|isfloat %}
+                {{ data_item|sigfig }}
+            {% else %}
+                {{ data_item }}
+            {% endif %}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
 </html>

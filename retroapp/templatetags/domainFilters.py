@@ -1,8 +1,11 @@
 from django import template
 # from django.utils.http import urlquote
 from urllib.parse import quote as urlquote
+
 from rdkit import Chem
 import re
+import numbers
+
 
 
 register = template.Library()
@@ -53,3 +56,13 @@ def replace(value, arg):
 
     what, to = arg.split('|')
     return value.replace(what, to)
+
+
+@register.filter
+def isnumeric(value):
+    return isinstance(value, numbers.Number)
+
+
+@register.filter
+def isfloat(value):
+    return isinstance(value, float)
