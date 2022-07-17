@@ -1,6 +1,6 @@
 body {
   /* width: 30%; */
-  margin: 120px auto;
+  /* margin: 120px auto; */
   font-size: 20px;
 }
 
@@ -9,16 +9,44 @@ body div {
   color:  #333;
 }
 
-body input {
+/* body input {
   width: 40%;
   margin: 0 12px;
-}
+} */
 
-.login div {
+.loginBtn div {
   background-color: #005f5c;
   color: #dfdfdf;
   border-radius:  6px;
-  width:  60px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
   padding:  6px 12px;
   text-align:  center;
+}
+
+table, th, td {
+  /* border: 1px solid; */
+  /* background-color: #cffffd; */
+}
+
+table.loginTable {
+  font-size: 20px;
+
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  
+  /* text-align: center; */
+  
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+input.inputPrimary {
+  width: 100%;
+  max-width: 300px;
+  min-width: 200px;
+  box-sizing: border-box;
 }
