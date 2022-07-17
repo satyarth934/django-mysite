@@ -84,12 +84,16 @@ def pks(request):
         # Filtering and sorting based on search query
         min_val = search_query["molecular_property_min"]
         max_val = search_query["molecular_property_max"]
+        target_val = search_query["molecular_property_target"]
         mol_property = search_query["molecular_property"]
         retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
 
         sort_optn = search_query["sorting_mode"]
         if sort_optn != NO_SORT:
-            retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING))
+            if target_val is None:
+                retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING))
+            else:
+                retro_df = retro_df.sort_values(by=[mol_property], ascending=(sort_optn == ASCENDING), key=lambda x: np.abs(target_val-x))
 
         # Render the filtered dataframe to a webpage
         table_rendered_str = showtable(

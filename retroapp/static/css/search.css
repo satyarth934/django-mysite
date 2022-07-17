@@ -10,8 +10,8 @@ body div {
 }
 
 body input {
-  width: 40%;
-  margin: 5 12px;
+  width: 100%;
+  /* margin: 5 12px; */
 }
 
 .selectHolder {
@@ -29,4 +29,71 @@ body input {
   width:  60px;
   padding:  6px 12px;
   text-align:  center;
+}
+
+/* DEBUGGING PURPOSE ONLY */
+table, th, tr, td {
+  border: 1px solid;
+}
+
+table.searchForm {
+    font-size: 20px;
+  
+    /* position: relative; */
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+  
+    text-align: right;
+  
+    /* margin-top: 5%;
+    margin-bottom: 5%; */
+    /* border-spacing: 5px; */
+    /* border-collapse: separate; */
+}
+
+table.searchTitle {
+  font-size: 20px;
+
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+
+  text-align: center;
+  padding: 1%;
+}
+
+table.searchBtn {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+
+  text-align: center;
+  padding: 1%;
+}
+
+tbody {
+  display: table-row-group;
+  /* display: grid; */
+  width: 100%;
+  /* vertical-align: auto; */
+  /* border-color: inherit; */
+}
+
+select {
+  width: 100%;
+  font-size: 15px;
+}
+
+input.submitBtn {
+  background-color: #005f5c;
+  color: #dfdfdf;
+  border-radius: 6px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
+  padding: 6px 12px;
+  text-align: center;
 }

@@ -7,7 +7,6 @@ import re
 import numbers
 
 
-
 register = template.Library()
 
 
@@ -71,3 +70,9 @@ def isfloat(value):
 @register.filter
 def islist(value):
     return isinstance(value, list)
+
+@register.filter
+def index(indexable, i):
+    if i >= len(indexable):
+        return f"ERROR: Index out of range. index={i}; len(list)={len(indexable)}"
+    return indexable[i]

@@ -7,14 +7,38 @@
     {% include "retroapp/header.html" %}
 
     <body>
-        <p>Enter molecule SMILES data and property model</p>
+        <table class="searchTitle">
+            <tr>
+                <td>
+                    Enter molecule SMILES data and property model
+                </td>
+            </tr>
+        </table>
 
         <form action="" method="post">
             {% csrf_token %}
-            <table>
+            {% include 'retroapp/search_form.html' with form=form %}
+            <!-- <table class="searchForm">
+                <tr>
+                    <td colspan="2" align="center">Enter molecule SMILES data and property model</td>
+                </tr>
+                
                 {{ form.as_table }}
-            </table>
-            <input type="submit" value="Submit">
+
+                <tr>
+                    <td colspan="2" align="center">
+                        <input class="submitBtn" type="submit" value="Submit">
+                    </td>
+                </tr>
+            </table> -->
+
+            <table class="searchBtn">
+                <tr>
+                    <td>
+                        <input class="submitBtn" type="submit" value="Submit">
+                    </td>
+                </tr>
+            </table>            
         </form>
 
     </body>

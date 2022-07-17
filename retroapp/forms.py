@@ -21,21 +21,38 @@ class TestForm(forms.Form):
 
 class SearchForm(forms.Form):
     smiles_string = forms.CharField(
+        label="SMILES String",
         # help_text="Enter the SMILES string"
     )
     molecular_property = forms.ChoiceField(
+        label="Molecular Property",
         # help_text="Select property to query", 
         choices=enumerate(constants.MOLECULE_PROPERTIES.keys()),
     )
     molecular_property_min = forms.FloatField(
+        label="Min",
+        required=False,
         # help_text="Enter the min value for the selected property"
     )
     molecular_property_max = forms.FloatField(
+        label="Max",
+        required=False,
+        # help_text="Enter the max value for the selected property"
+    )
+    molecular_property_target = forms.FloatField(
+        label="Target",
+        required=False,
         # help_text="Enter the max value for the selected property"
     )
     sorting_mode = forms.ChoiceField(
+        label="Sorting Mode",
         # help_text="Select the sorting method for the results",
         choices=enumerate(constants.SORTING_OPTIONS),
+    )
+    notes = forms.CharField(
+        label="Notes",
+        widget=forms.Textarea(attrs={'rows':5, 'style': 'width: 100%'}),
+        required=False,
     )
 
 
@@ -56,6 +73,9 @@ class SearchForm(forms.Form):
         mol_prop = self.cleaned_data['molecular_property']
         mol_prop_min = self.cleaned_data['molecular_property_min']
 
+        if mol_prop_min is None:
+            return constants.MOLECULE_PROPERTIES[mol_prop]['min']
+
         if mol_prop_min < constants.MOLECULE_PROPERTIES[mol_prop]['min']:
             raise ValidationError(_(f"Invalid minimum value entered for the property. The value cannot be lower than {constants.MOLECULE_PROPERTIES[mol_prop]['min']}."))
         
@@ -69,6 +89,9 @@ class SearchForm(forms.Form):
         mol_prop = self.cleaned_data['molecular_property']
         mol_prop_max = self.cleaned_data['molecular_property_max']
 
+        if mol_prop_max is None:
+            return constants.MOLECULE_PROPERTIES[mol_prop]['max']
+
         if mol_prop_max > constants.MOLECULE_PROPERTIES[mol_prop]['max']:
             raise ValidationError(_(f"Invalid maximum value entered for the property. The value cannot be greater than {constants.MOLECULE_PROPERTIES[mol_prop]['max']}."))
         
@@ -76,6 +99,22 @@ class SearchForm(forms.Form):
             raise ValidationError(_(f"Invalid maximum value entered for the property. The value cannot be lower than {constants.MOLECULE_PROPERTIES[mol_prop]['min']}."))
         
         return self.cleaned_data['molecular_property_max']
+
+    
+    def clean_molecular_property_target(self):
+        mol_prop = self.cleaned_data['molecular_property']
+        mol_prop_target = self.cleaned_data['molecular_property_target']
+
+        if mol_prop_target is None:
+            return self.cleaned_data['molecular_property_target']
+
+        if mol_prop_target > constants.MOLECULE_PROPERTIES[mol_prop]['max']:
+            raise ValidationError(_(f"Invalid target value entered for the property. The value cannot be greater than {constants.MOLECULE_PROPERTIES[mol_prop]['max']}."))
+        
+        if mol_prop_target < constants.MOLECULE_PROPERTIES[mol_prop]['min']:
+            raise ValidationError(_(f"Invalid target value entered for the property. The value cannot be lower than {constants.MOLECULE_PROPERTIES[mol_prop]['min']}."))
+        
+        return self.cleaned_data['molecular_property_target']
 
 
     def clean_sorting_mode(self):

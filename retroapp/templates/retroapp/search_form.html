@@ -1,0 +1,50 @@
+{% load widget_tweaks %}
+{% load domainFilters %}
+
+{% for hidden_field in form.hidden_fields %}
+{{ hidden_field }}
+{% endfor %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+    {% for error in form.non_field_errors %}
+    {{ error }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<table class="searchForm">
+    {% for field in form.visible_fields %}
+    <div class="form-group">
+        <tr>
+            {% if field.label == "Min" %}
+                <td>Variable constraints:</td>
+                <td>{{ field.label }}</td>
+                <td>{{ field }}</td>
+
+                {% with max_idx=forloop.counter0|add:1 %}
+                    {% with max_field=form.visible_fields|index:max_idx %}
+                        <td>{{ max_field.label }}</td>
+                        <td>{{ max_field }}</td>
+                    {% endwith %}
+                {% endwith %}
+
+                {% with target_idx=forloop.counter0|add:2 %}
+                    {% with target_field=form.visible_fields|index:target_idx %}
+                        <td>{{ target_field.label }}</td>
+                        <td>{{ target_field }}</td>
+                    {% endwith %}
+                {% endwith %}
+
+            {% elif field.label == "Max" or field.label == "Target" %}
+                <!-- IGNORE -->
+
+            {% else %}
+                <td>{{ field.label_tag}}</td>
+                <td colspan="6">{{ field }}</td>
+            {% endif %}
+
+        </tr>
+    </div>
+    {% endfor %}
+</table>
