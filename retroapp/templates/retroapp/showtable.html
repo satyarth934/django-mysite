@@ -8,10 +8,16 @@
 
 <table style="margin-left:auto;margin-right:auto;">
     <tr>
+        <th colspan={{ query_dict.items|length }}>
+            QUERY
+        </th>
+    </tr>
+
+    <tr>
         {% for k, v in query_dict.items %}
-            <td style="color: black;">
+            <th style="color: black;">
                 {{ k }}
-            </td>
+            </th>
         {% endfor %}
     </tr>
         
