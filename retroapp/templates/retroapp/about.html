@@ -1,53 +1,117 @@
 <html>
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/about.css' %}">
 
 <!-- this include tag should be at the top of each page to add the header above the body-->
 {% include "retroapp/header.html" %}
 
 <body>
-    <table>
+    
+    <table class="aboutTitle">
+        <tr>
+            <th>
+                What is the Biomolecular Architect?
+            </th>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
         <tr>
             <td>
-                <img src="{% static 'media/puppy.jpg' %}" alt="puppy"/>
+                The Biomolecular Architect is a retrobiosynthesis tool that not only recommends the reactions (and encoding DNA) to
+                synthesize a molecule, but also recommends molecules that fit a specification (e.g., an octane number of 80 or a binding
+                affinity of 50 nM to a given protein).
+
+                Recommending molecules that fit a specification is what is called inverse molecular design.
             </td>
+        </tr>
+
+        <tr>
             <td>
-                <p align="justify">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus tempus enim vitae metus congue, in placerat arcu
-                    pharetra. Integer aliquet, lacus sit amet cursus pellentesque, nibh leo tincidunt sem, non eleifend nisl tellus nec
-                    ante. Vivamus egestas augue a egestas interdum. Aliquam porta elementum tellus. Aliquam ac blandit sapien. Quisque
-                    egestas in ante accumsan ornare. Aenean tincidunt porttitor nunc eu viverra. Suspendisse bibendum dapibus euismod.
+                <img src="{% static 'media/biomolecular_architect.png' %}" alt="bio_arch" />
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                How does it work?
+            </th>
+        </tr>
+
+        <tr>
+            <td>
+                The Biomolecular architect is based in <a href="https://clustercad.jbei.org/">ClusterCAD</a> and Retrotide (in preparation) for retrobiosynthesis and <a href="https://chemrxiv.org/engage/chemrxiv/article-details/6227f24d57a9d2462f783d64">Macaw</a> and
+                <a href="https://graphdot.readthedocs.io/en/latest/">Graphdot</a> for molecular inverse design and molecule property prediction.
                 
-                    Sed eget sollicitudin sapien. Etiam sapien neque, interdum nec est a, convallis interdum nisl. Suspendisse potenti.
-                    Quisque eleifend tellus eget tellus suscipit dictum. Nullam consectetur velit eu auctor condimentum. Vestibulum eros
-                    nisl, fringilla non metus ac, malesuada placerat libero. Quisque aliquet, lectus vitae gravida interdum, ligula urna
-                    lacinia mi, vel cursus urna ipsum at ante. Vestibulum sed eros sed turpis aliquet aliquet ac eget dolor. Lorem ipsum
-                    dolor sit amet, consectetur adipiscing elit. Mauris venenatis congue mauris, in pretium turpis pulvinar ac. Donec
-                    lobortis sapien iaculis, molestie ligula ut, iaculis urna.
+                ClusterCAD and Retrotide offer retrobiosynthesis capabilities (i.e. recommendation of reactions and DNA to synthesis a
+                particle) based on <a href="https://en.wikipedia.org/wiki/Polyketide_synthase">polyketide synthases</a> (PKSs). PKSs are modular enzymes that can synthesize a combinatorially large
+                number of molecules (e.g., antibiotics). We will soon complement the PKS retrobiosynthesis capabilities with general
+                biological and chemical retrobiosynthesis so as to cover the largest amount of chemical space.
                 
-                    Sed vel feugiat metus. Donec vehicula dolor mi. Aenean arcu est, porta vel libero sed, maximus finibus eros. Duis
-                    efficitur lectus venenatis consectetur fringilla. Sed commodo nulla molestie diam ultricies pulvinar. Suspendisse
-                    volutpat felis justo, sit amet tempus velit posuere eget. Fusce vitae hendrerit leo. Vestibulum non enim posuere,
-                    suscipit tortor id, dignissim sapien.
+                Macaw offers molecular inverse design and property prediction capabilities based on SELFIES sampling and molecular
+                embedding. Graphdot offers molecular property prediction based on graphs.
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                Citing Biomolecular architect
+            </th>
+        </tr>
+    
+        <tr>
+            <td>
+                The paper describing this site is still in production. If you use it, however, please cite:
                 
-                    In sit amet erat molestie, efficitur odio posuere, rhoncus elit. Ut feugiat, arcu nec tristique suscipit, odio purus
-                    sodales turpis, non sagittis lectus sem ut elit. Morbi bibendum vel purus eu varius. Pellentesque habitant morbi
-                    tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse ullamcorper sem molestie mollis
-                    volutpat.
-                    Sed placerat libero mollis rhoncus posuere. Nulla eleifend cursus nunc sit amet condimentum. Pellentesque vestibulum
-                    elit et nibh fringilla, quis fermentum neque iaculis. Phasellus justo felis, cursus non lorem in, lobortis lobortis
-                    turpis. Aenean eget gravida lacus. Nam mattis nibh vitae ante dapibus auctor.
-                
-                    Vestibulum gravida efficitur orci, id viverra lorem aliquam quis. Morbi efficitur libero sit amet volutpat faucibus.
-                    Aliquam varius posuere urna, id venenatis quam mollis nec. Ut interdum sed lectus ac porta. Quisque neque magna,
-                    sollicitudin in ex sit amet, sodales aliquam purus. Aliquam erat volutpat. Nulla sapien enim, feugiat nec maximus
-                    ut,
-                    molestie ut nisl. Maecenas blandit rutrum dui id pellentesque. Integer turpis neque, rutrum pretium mi eget,
-                    interdum
-                    ultricies mi. Donec nec justo mi. In condimentum dapibus nibh, non egestas sem sollicitudin eget. Etiam faucibus
-                    augue
-                    non nulla pulvinar, in semper libero cursus. Vestibulum aliquam velit quis dui ultrices mattis.
-                </p>
+                <ul>
+                    <li>
+                        ClusterCAD: a computational platform for type I modular polyketide synthase design. Eng, C.H.*, Backman, T.W.H.*,
+                        Bailey, C.B., Magnan, C., Martin, H.G., Katz, L., Baldi, P., Keasling, J.D. Nucleic Acids Research, 2017 Oct.
+                        <a href="https://doi.org/10.1093/nar/gkx893">https://doi.org/10.1093/nar/gkx893</a>
+                    </li>
+
+                    <li>
+                        Tang, Yu-Hang, and Wibe A. de Jong. "Prediction of atomization energy using graph kernel and active learning." The
+                        Journal of chemical physics 150, no. 4 (2019): 044107.
+                    </li>
+
+                    <li>
+                        Tang, Yu-Hang, Oguz Selvitopi, Doru Thom Popovici, and Aydın Buluç. "A High-Throughput Solver for Marginalized Graph
+                        Kernels on GPU." In 2020 IEEE International Parallel and Distributed Processing Symposium (IPDPS), pp. 728-738. IEEE,
+                        2020.
+                    </li>
+
+                    <li>
+                        Blay V, Radivojevic T, Allen JE, Hudson CM, Garcia-Martin H. MACAW: an accessible tool for molecular embedding and
+                        inverse molecular design. ChemRxiv. Cambridge: Cambridge Open Engage; 2022; This content is a preprint and has not been
+                        peer-reviewed.
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                Software
+            </th>
+        </tr>
+    
+        <tr>
+            <td>
+                Biomolecular architect uses the following software libraries:
+    
+                <ol>
+                    <li>Django</li>
+                    <li>Retrotide</li>
+                    <li>Graphdot</li>
+                </ol>
             </td>
         </tr>
     </table>
