@@ -1,0 +1,49 @@
+{% load widget_tweaks %}
+{% load domainFilters %}
+
+{% for hidden_field in form.hidden_fields %}
+{{ hidden_field }}
+{% endfor %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+    {% for error in form.non_field_errors %}
+    {{ error }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<table class="searchForm">
+    {% for field in form.visible_fields %}
+    <div class="form-group">
+        <tr>
+            {% if field.label == "Molecular Property" %}
+                <td>{{ field.label }}</td>
+                <td>{{ field }}</td>
+
+                {% with valrange_idx=forloop.counter0|add:1 %}
+                    {% with valrange_field=form.visible_fields|index:valrange_idx %}
+                        <td>{{ valrange_field.label }}</td>
+                        <td>{{ valrange_field }}</td>
+                    {% endwith %}
+                {% endwith %}
+
+                {% with sortmode_idx=forloop.counter0|add:2 %}
+                    {% with sortmode_field=form.visible_fields|index:sortmode_idx %}
+                        <td>{{ sortmode_field.label }}</td>
+                        <td>{{ sortmode_field }}</td>
+                    {% endwith %}
+                {% endwith %}
+
+            {% elif field.label == "Value Range" or field.label == "Sorting Mode" %}
+                <!-- IGNORE -->
+
+            {% else %}
+                <td>{{ field.label_tag}}</td>
+                <td colspan="6">{{ field }}</td>
+            {% endif %}
+
+        </tr>
+    </div>
+    {% endfor %}
+</table>

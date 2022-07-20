@@ -17,7 +17,7 @@
 
         <form action="" method="post">
             {% csrf_token %}
-            {% include 'retroapp/search_form.html' with form=form %}
+            {% include 'retroapp/search_form_lite.html' with form=form %}
             <!-- <table class="searchForm">
                 <tr>
                     <td colspan="2" align="center">Enter molecule SMILES data and property model</td>
