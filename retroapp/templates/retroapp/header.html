@@ -4,7 +4,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/header.css' %}">
 
 <header>
-  <div class="logo">Biomolecular Architect</div>
+  <div class="logo">
+    <!-- Biomolecular Architect -->
+    <img src="{% static 'media/biomolecular_architect_header.png' %}" alt="biomolecular_architect" />
+  </div>
   <div class="navLinks">
     <!-- <a href="./home.html">Home/Login</a> -->
     <a href="{% url 'home' %}" id="home-tab">Home/Login</a>
