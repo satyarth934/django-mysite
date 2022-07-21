@@ -1,7 +1,18 @@
 <html>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}">
+    <head>
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}">
+        
+        <!-- SMILES Drawer -->
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Smiles Drawer Example</title>
+        <meta name="description" content="A minimal smiles drawer example." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        <link href="https://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" />
+    </head>
 
     <!-- this include tag should be at the top of each page to add the header above the body-->
     {% include "retroapp/header.html" %}
@@ -18,19 +29,6 @@
         <form action="" method="post">
             {% csrf_token %}
             {% include 'retroapp/search_form_lite.html' with form=form %}
-            <!-- <table class="searchForm">
-                <tr>
-                    <td colspan="2" align="center">Enter molecule SMILES data and property model</td>
-                </tr>
-                
-                {{ form.as_table }}
-
-                <tr>
-                    <td colspan="2" align="center">
-                        <input class="submitBtn" type="submit" value="Submit">
-                    </td>
-                </tr>
-            </table> -->
 
             <table class="searchBtn">
                 <tr>
@@ -40,6 +38,37 @@
                 </tr>
             </table>            
         </form>
+
+        {% if smiles_string %}
+            <div id="pks_results" class="pks_results">
+                {% include 'retroapp/showtable_2.html' %}
+            </div>
+        {% endif %}
+
+
+        <!-- SMILES Drawer thing #TODO: Place it appropriately -->
+        <canvas id="smiles-canvas" width="50" height="50"></canvas>
+        
+        <script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
+        <script>
+            let input = document.getElementById("id_smiles_string");
+            let options = {};
+
+            // Initialize the drawer to draw to canvas
+            let smilesDrawer = new SmilesDrawer.Drawer(options);
+            // Alternatively, initialize the SVG drawer:
+            // let svgDrawer = new SmilesDrawer.SvgDrawer(options);
+
+            input.addEventListener("input", function () {
+                // Clean the input (remove unrecognized characters, such as spaces and tabs) and parse it
+                SmilesDrawer.parse(input.value, function (tree) {
+                    // Draw to the canvas
+                    smilesDrawer.draw(tree, "smiles-canvas", "light", false);
+                    // Alternatively, draw to SVG:
+                    // svgDrawer.draw(tree, 'output-svg', 'dark', false);
+                });
+            });
+        </script>
 
     </body>
 </html>

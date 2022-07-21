@@ -259,7 +259,7 @@ def showtable(request, query_dict, retro_df, width=243):
         "keys": ["Rendered Molecule", *retro_df.keys()],
         "df": retro_df,
         "width": width,
-        }
+    }
     rendered_str = template.render(context, request)
     return rendered_str
 
