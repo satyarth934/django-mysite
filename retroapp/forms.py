@@ -146,6 +146,7 @@ class SearchFormLite(forms.Form):
         label="Sorting Mode",
         # help_text="Select the sorting method for the results",
         choices=enumerate(constants.SORTING_OPTIONS),
+        required=False,
     )
     notes = forms.CharField(
         label="Notes",
@@ -209,7 +210,11 @@ class SearchFormLite(forms.Form):
 
 
     def clean_sorting_mode(self):
-        mode = self.fields['sorting_mode'].choices[int(self.cleaned_data['sorting_mode'])][1]
+        if self.cleaned_data['sorting_mode'] == "":
+            mode = constants.NO_SORT
+        else:
+            mode = self.fields['sorting_mode'].choices[int(self.cleaned_data['sorting_mode'])][1]
+        
         if mode not in constants.SORTING_OPTIONS:
             raise ValidationError(_("Invalid sorting mode selected."))
 

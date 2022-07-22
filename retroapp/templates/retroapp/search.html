@@ -39,36 +39,11 @@
             </table>            
         </form>
 
-        {% if smiles_string %}
-            <div id="pks_results" class="pks_results">
-                {% include 'retroapp/showtable_2.html' %}
-            </div>
-        {% endif %}
-
-
-        <!-- SMILES Drawer thing #TODO: Place it appropriately -->
-        <canvas id="smiles-canvas" width="50" height="50"></canvas>
-        
-        <script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
-        <script>
-            let input = document.getElementById("id_smiles_string");
-            let options = {};
-
-            // Initialize the drawer to draw to canvas
-            let smilesDrawer = new SmilesDrawer.Drawer(options);
-            // Alternatively, initialize the SVG drawer:
-            // let svgDrawer = new SmilesDrawer.SvgDrawer(options);
-
-            input.addEventListener("input", function () {
-                // Clean the input (remove unrecognized characters, such as spaces and tabs) and parse it
-                SmilesDrawer.parse(input.value, function (tree) {
-                    // Draw to the canvas
-                    smilesDrawer.draw(tree, "smiles-canvas", "light", false);
-                    // Alternatively, draw to SVG:
-                    // svgDrawer.draw(tree, 'output-svg', 'dark', false);
-                });
-            });
-        </script>
-
+        <!-- #TODO: Position this appropriately -->
+        <!-- {% if smiles_string %} -->
+            <!-- <div id="pks_results" class="pks_results"> -->
+                <!-- {% include 'retroapp/showtable_2.html' %} -->
+            <!-- </div> -->
+        <!-- {% endif %} -->
     </body>
 </html>

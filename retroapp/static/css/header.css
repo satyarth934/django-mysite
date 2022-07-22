@@ -6,12 +6,12 @@ header {
 
 .logo {
   font-size:  46px;
-  background-color:  #dfdfdf;
+  /* background-color:  #dfdfdf; */
   text-align: center;
 }
 
 .logo img {
-  width: 100%;
+  width: 60%;
 }
 
 .navLinks {
