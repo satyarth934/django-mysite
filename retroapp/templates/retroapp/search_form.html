@@ -48,3 +48,134 @@
     </div>
     {% endfor %}
 </table>
+
+
+<!-- -------------------------- -->
+<!-- ---------- LITE ---------- -->
+<!-- -------------------------- -->
+{% load widget_tweaks %}
+{% load domainFilters %}
+
+<!-- Actual form things -->
+{% for hidden_field in smiles_form.hidden_fields %}
+{{ hidden_field }}
+{% endfor %}
+
+{% if smiles_form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+    {% for error in smiles_form.non_field_errors %}
+    {{ error }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<table class="searchForm">
+    <tr>
+        <td rowspan="6">
+            <!-- SMILES Drawer -->
+            <canvas id="smiles-canvas" width="500" height="500" style="width: 0px; height: 0px;"></canvas>
+        </td>
+    </tr>
+
+    {% for field in form.visible_fields %}
+    <div class="form-group">
+        <tr>
+            {% if field.label == "Molecular Property" %}
+            <td>{{ field.label }}</td>
+            <td>{{ field }}</td>
+
+            {% with valrange_idx=forloop.counter0|add:1 %}
+            {% with valrange_field=form.visible_fields|index:valrange_idx %}
+            <td>{{ valrange_field.label }}</td>
+            <td>{{ valrange_field }}</td>
+            {% endwith %}
+            {% endwith %}
+
+            {% with sortmode_idx=forloop.counter0|add:2 %}
+            {% with sortmode_field=form.visible_fields|index:sortmode_idx %}
+            <td>{{ sortmode_field.label }}</td>
+            <td>{{ sortmode_field }}</td>
+            {% endwith %}
+            {% endwith %}
+
+            <td>
+                <input class="add_field_btn" type="button" onChange="addField()" id="id_add_field">+</input>
+                <!-- <input class="add_field_btn" type="button" onclick="addField()" id="">+</input> -->
+            </td>
+
+            {% elif field.label == "Value Range" or field.label == "Sorting Mode" %}
+            <!-- IGNORE -->
+
+            {% else %}
+            <td>{{ field.label_tag }}</td>
+            <td colspan="6">{{ field }}</td>
+            {% endif %}
+
+        </tr>
+    </div>
+    {% endfor %}
+</table>
+
+<!-- Script: SMILES String Canvas Draw -->
+<script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
+<script>
+    let input = document.getElementById("id_smiles_string");
+    let options = {
+        "width": 250,
+        "height": 250,
+    };
+
+    // Initialize the drawer to draw to canvas
+    let smilesDrawer = new SmilesDrawer.Drawer(options);
+    // Alternatively, initialize the SVG drawer:
+    // let svgDrawer = new SmilesDrawer.SvgDrawer(options);
+
+    function canvasDraw() {
+        // Clean the input (remove unrecognized characters, such as spaces and tabs) and parse it
+        SmilesDrawer.parse(input.value, function (tree) {
+            // Draw to the canvas
+            smilesDrawer.draw(tree, "smiles-canvas", "light", false);
+            // Alternatively, draw to SVG:
+            // svgDrawer.draw(tree, 'output-svg', 'dark', false);
+        });
+    }
+
+    input.addEventListener("input", canvasDraw);
+    window.addEventListener('load', canvasDraw);
+</script>
+
+<!-- Script: Form field validation -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    function isNum(val) {
+        // Look into this. Might break.
+        return !isNaN(val);
+    }
+
+    function validate() {
+        var searchQuery = $("#id_property_value_range").val();
+        console.log("check if input is number - " + isNum(searchQuery));
+
+        const sorting_mode_elem = document.getElementById('id_sorting_mode');
+        if ((searchQuery == "") | (!isNum(searchQuery))) {
+            sorting_mode_elem.removeAttribute('disabled');
+
+        }
+        else {
+            sorting_mode_elem.value = 2;
+            sorting_mode_elem.setAttribute('disabled', '');
+        }
+    }
+
+    $("#id_property_value_range").keyup(validate)
+    $(document).ready(validate)
+
+</script>
+
+<!-- Script: Add field -->
+<script>
+    function addField() {
+        // add_field_btn = document.getElementById("id_add_field");
+
+    }
+</script>
