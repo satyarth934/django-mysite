@@ -1,21 +1,23 @@
 from collections import defaultdict
 from django.shortcuts import render, redirect
-from django.urls import path, re_path
+# from django.urls import path, re_path
 
-from django.http import Http404, HttpResponse, JsonResponse
+# from django.http import Http404, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from rdkit import Chem
-from rdkit.Chem import Draw, rdFMCS, AllChem
+# from rdkit.Chem import Draw, rdFMCS, AllChem
 
 # from django.utils.http import urlunquote
-from urllib.parse import unquote as urlunquote
+# from urllib.parse import unquote as urlunquote
 
-from django.views.decorators.cache import cache_page
-import re
-import xml.etree.ElementTree as ET
-from io import BytesIO
+# from django.views.decorators.cache import cache_page
+# import re
+# import xml.etree.ElementTree as ET
+# from io import BytesIO
 
 import pandas as pd
 from django.template import loader
+from django.forms import formset_factory
 from retroapp import constants
 from retroapp.constants import ASCENDING, DESCENDING, NO_SORT, MOLECULE_PROPERTIES, SORTING_OPTIONS
 
@@ -27,8 +29,8 @@ warnings.formatwarning = utils.warning_format    # Defining a specific format to
 
 import numpy as np
 
-import retroapp.urls as retroapp_urls
-from retroapp.forms import SearchForm, SearchFormLite
+# import retroapp.urls as retroapp_urls
+from retroapp.forms import SMILESForm, PropertyForm
 
 ######################
 # Webpage views here #
@@ -50,138 +52,118 @@ def home(request):
     return HttpResponse(rendered_str)
 
 
-def search(request):
-    # If this is a GET (or any other method) create the default form.
-    if request.method != "POST":
-        form = SearchForm(
-            initial={
-                'smiles_string': None,
-                'molecular_property': list(MOLECULE_PROPERTIES.keys())
-                                        .index('Cetane Number'),
-                'molecular_property_min': None,
-                'molecular_property_max': None,
-                'molecular_property_target': None,
-                'sorting_mode': SORTING_OPTIONS.index(DESCENDING),
-            }
-        )
-        context = {
-            'form': form,
-        }
-        return render(request, "retroapp/search.html", context=context)
-    
-    else:
-        form = SearchForm(request.POST)
-        if form.is_valid():
-            request.session['_search_query'] = form.cleaned_data
-            return redirect('pks', permanent=False)
-
-
 def search_lite(request):
+    smiles_form = SMILESForm(
+        initial={
+            'smiles_string': None,
+            'notes': None,
+        },
+    )
+    PropertyFormSet = formset_factory(PropertyForm)
+
     # If this is a GET (or any other method) create the default form.
     if request.method != "POST":
-        form = SearchFormLite(
-            initial={
-                'smiles_string': None,
-                'molecular_property': list(MOLECULE_PROPERTIES.keys())
-                                        .index('Cetane Number'),
-                'property_value_range': None,
-                'sorting_mode': SORTING_OPTIONS.index(DESCENDING),
-            }
-        )
+        pfset = PropertyFormSet()
         context = {
-            'form': form,
+            "smiles_form": smiles_form,
+            "property_formset": pfset,
         }
-        return render(request, "retroapp/search.html", context=context)
+        return render(request, "retroapp/search.html", context)
     
     else:
-        form = SearchFormLite(request.POST)
-        if form.is_valid():
-            request.session['_search_query'] = form.cleaned_data
+        smiles_form = SMILESForm(request.POST)
+        property_formset = PropertyFormSet(request.POST)
+
+        if smiles_form.is_valid():
+            print("[VALID] smiles_form!!")
+            print(smiles_form.cleaned_data)
+        else:
+            print("Invalid smiles_form!!")
+            pprint(smiles_form.__dict__)
+        
+        if property_formset.is_valid():
+            print("[VALID] property_formset")
+            for i, form in enumerate(property_formset):
+                print(f"---> FORM {i}")
+                print(form.cleaned_data)
+        else:
+            print("Invalid property_Formset!!")
+            print(property_formset.errors)
+        
+        # return render(request, "formsetapp/index.html", {})
+        if smiles_form.is_valid() and property_formset.is_valid():
+            request.session['_search_query_smiles'] = smiles_form.cleaned_data
+            request.session['_search_query_properties'] = [form.cleaned_data for form in property_formset]
             return redirect('pks', permanent=False)
 
 
-def pks(request):
-    if "_search_query" in request.session:
-        request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
-        search_query = request.session.get('_search_query')
-
-        # Calling retrotide API
-        retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=search_query["molecular_property"])
-
-        # Filtering and sorting based on search query
-        min_val = search_query["molecular_property_min"]
-        max_val = search_query["molecular_property_max"]
-        target_val = search_query["molecular_property_target"]
-        mol_property = search_query["molecular_property"]
-        retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
-
-        sort_optn = search_query["sorting_mode"]
-        if sort_optn != NO_SORT:
-            if target_val is None:
-                retro_df = retro_df.sort_values(
-                    by=[mol_property], 
-                    ascending=(sort_optn == ASCENDING),
-                )
-            else:
-                retro_df = retro_df.sort_values(
-                    by=[mol_property], 
-                    ascending=True, 
-                    key=lambda x: np.abs(target_val-x)
-                )
-
-        # Render the filtered dataframe to a webpage
-        table_rendered_str = showtable(
-            request, 
-            query_dict=search_query, 
-            retro_df=retro_df,
-        )
-        return HttpResponse(table_rendered_str)
-
-    else:
-        warnings.warn("404: No search query!")
-        return HttpResponse("404: No search query!")
-
-
+# TODO: Update pks function to use POST values fetched from the submitted form.
 def pks_lite(request):
     if "_search_query" in request.session:
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
-        search_query = request.session.get('_search_query')
+        # search_query = request.session.get('_search_query')
+        search_query_smiles = request.session['_search_query_smiles']
+        search_query_properties = request.session['_search_query_properties']
+        print(f"{search_query_smiles = }")
+        print(f"{search_query_properties = }")
+        search_query = dict()
+        search_query["smiles_string"] = search_query_smiles["smiles_string"]
+        search_query["notes"] = search_query_smiles["notes"]
+        search_query["properties"] = search_query_properties
+        print(f"{search_query = }")
 
         # Calling retrotide API
-        mol_property = search_query["molecular_property"]
-        retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_property)
+        mol_properties = [d["molecular_property"] for d in search_query["properties"]]
+        retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
 
-        # Filtering and sorting based on search query
-        min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
-        max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
-        target_val = None
+        # Update the dataframe based on min-max ranges of all properties.
+        for search_query_property in search_query["properties"]:
+            mol_property = search_query_property["molecular_property"]
+            min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
+            max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
+            search_query_property["target_val"] = None
 
-        property_val_range = search_query["property_value_range"]
-        if property_val_range is not None:
-            if " - " in property_val_range:    # Range is specified
-                min_val, max_val = [float(range_val) for range_val in property_val_range.split(" - ")]
-            else:    # target value is specified
-                target_val = float(property_val_range)                
+            property_val_range = search_query_property["property_value_range"]
+            if property_val_range:
+                if isrange(property_val_range):    # Range is specified
+                    min_val, max_val = [float(range_val) for range_val in property_val_range.split(" - ")]
+                else:    # target value is specified
+                    search_query_property["target_val"] = float(property_val_range)                
 
-        retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
-
-        if target_val is not None:
-            # Sorting based on the values closest to the target value
-            retro_df = retro_df.sort_values(
-                by=[mol_property], 
-                ascending=True, 
-                key=lambda x: np.abs(target_val-x)
-            )
+            retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
         
-        else:
-            # Sorting based on specified sorting mode
-            sort_optn = search_query["sorting_mode"]
-            if sort_optn != NO_SORT:
-                retro_df = retro_df.sort_values(
-                    by=[mol_property], 
-                    ascending=(sort_optn == ASCENDING),
-                )
-        
+        # Get all the properties that have a sorting_mode specified or have a target value.
+        sorting_cols = [
+            sqprop["molecular_property"] for sqprop in search_query["properties"] if sqprop["sorting_mode"] in [ASCENDING, DESCENDING] or not isrange(sqprop["property_value_range"])
+        ]
+
+        # Bool list to specify property sorting in ascending order.
+        sorting_cols_asc = list()
+        for sqprop in search_query["properties"]:
+            if not isrange(sqprop["property_value_range"]):
+                sorting_cols_asc.append(True)
+            else:
+                sorting_cols_asc.append(sqprop["sorting_mode"] == ASCENDING)
+
+        # Target values corresponding to each property
+        prop_targets = [sqprop["target_val"] for sqprop in search_query["properties"]]
+
+        # function defining the key for sorting
+        def sorting_key(pd_series):
+            idx = sorting_cols.index(pd_series.name)
+            target = prop_targets[idx]
+            if target is None:
+                return pd_series
+            
+            target = [target] * len(pd_series)
+            return np.abs(np.array(target) - pd_series)
+
+        retro_df = retro_df.sort_values(
+            by=sorting_cols, 
+            ascending=sorting_cols_asc, 
+            key=sorting_key
+        )
+
         # To reset the index value to start from 0 again
         retro_df = retro_df.reset_index(drop=True)
 
@@ -264,55 +246,5 @@ def showtable(request, query_dict, retro_df, width=243):
     return rendered_str
 
 
-
-
-
-
-
-
-
-
-
-###########
-# Archive #
-###########
-
-def retrotideAPI_dummy(request, smiles):
-    example_df = pd.read_csv("retroapp/example_df.tab", delimiter="\t")
-    return example_df
-
-
-
-from django.http import JsonResponse
-from retroapp.forms import TestForm
-
-
-def form_test_view(request):
-    """View function for form testing."""
-    print("Testing the form view.")
-
-    # If this is a POST request then process the Form data
-    if request.method == 'POST':
-
-        # Create a form instance and populate it with data from the request (binding):
-        form = TestForm(request.POST)
-
-        # Check if the form is valid:
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-            query = dict()
-            query['data'] = form.cleaned_data['test_form_data']
-
-            # redirect to a new URL:
-            return JsonResponse(query)
-
-    # If this is a GET (or any other method) create the default form.
-    else:
-        form = TestForm(initial={'test_form_data': ">>> Some default  value <<<"})
-
-    context = {
-        'form': form,
-        'delete': "delete stuff",
-    }
-
-    return render(request, 'retroapp/form_test_view.html', context)
+def isrange(property_value_str):
+    return " - " in property_value_str

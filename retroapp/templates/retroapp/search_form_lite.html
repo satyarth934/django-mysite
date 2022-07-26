@@ -2,59 +2,56 @@
 {% load domainFilters %}
 
 <!-- Actual form things -->
-{% for hidden_field in form.hidden_fields %}
+{% for hidden_field in smiles_form.hidden_fields %}
     {{ hidden_field }}
 {% endfor %}
 
-{% if form.non_field_errors %}
-<div class="alert alert-danger" role="alert">
-    {% for error in form.non_field_errors %}
-    {{ error }}
-    {% endfor %}
-</div>
+{% if smiles_form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for error in smiles_form.non_field_errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
 {% endif %}
 
+
 <table class="searchForm">
+    <!-- SMILES Drawer Canvas -->
     <tr>
-        <td rowspan="6">
-            <!-- SMILES Drawer -->
+        <td rowspan="99">
             <canvas id="smiles-canvas" width="500" height="500" style="width: 0px; height: 0px;"></canvas>
         </td>
     </tr>
 
-    {% for field in form.visible_fields %}
-    <div class="form-group">
-        <tr>
-            {% if field.label == "Molecular Property" %}
-                <td>{{ field.label }}</td>
-                <td>{{ field }}</td>
+    <!-- SMILES and Property Form -->
+    <tr>
+        <td> {{ smiles_form.smiles_string.label }} </td>
+        <td colspan="5"> {{ smiles_form.smiles_string }} </td>
+    </tr>
 
-                {% with valrange_idx=forloop.counter0|add:1 %}
-                    {% with valrange_field=form.visible_fields|index:valrange_idx %}
-                        <td>{{ valrange_field.label }}</td>
-                        <td>{{ valrange_field }}</td>
-                    {% endwith %}
-                {% endwith %}
-
-                {% with sortmode_idx=forloop.counter0|add:2 %}
-                    {% with sortmode_field=form.visible_fields|index:sortmode_idx %}
-                        <td>{{ sortmode_field.label }}</td>
-                        <td>{{ sortmode_field }}</td>
-                    {% endwith %}
-                {% endwith %}
-
-            {% elif field.label == "Value Range" or field.label == "Sorting Mode" %}
-                <!-- IGNORE -->
-
-            {% else %}
-                <td>{{ field.label_tag }}</td>
-                <td colspan="6">{{ field }}</td>
-            {% endif %}
-
+    {% for form in property_formset %}
+        <tr id="id_property_constraints">
+            <td> {{ form.molecular_property.label }} </td>
+            <td> {{ form.molecular_property }} </td>
+            <td> {{ form.property_value_range.label }} </td>
+            <td> {{ form.property_value_range }} </td>
+            <td> {{ form.sorting_mode.label }} </td>
+            <td> {{ form.sorting_mode }} </td>
         </tr>
-    </div>
     {% endfor %}
+
+    <tr>
+        <td colspan="6" align="right">
+            <input type="button" value="Add property" name="add_property" id="id_add_property" class="addProperty">
+        </td>
+    </tr>
+
+    <tr>
+        <td> {{ smiles_form.notes.label }} </td>
+        <td colspan="5"> {{ smiles_form.notes }} </td>
+    </tr>
 </table>
+
 
 <!-- Script: SMILES String Canvas Draw -->
 <script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
@@ -88,16 +85,19 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     function isNum(val) {
-        return !isNaN(val)
+        // Look into this. Might break.
+        return !isNaN(val);
     }
 
     function validate() {
-        var searchQuery = $("#id_property_value_range").val();
+        var total_forms = $('#id_form-TOTAL_FORMS').val();
+        var searchQuery = $("#id_form-" + (total_forms-1) + "-property_value_range").val();
         console.log("check if input is number - " + isNum(searchQuery));
 
-        const sorting_mode_elem = document.getElementById('id_sorting_mode');
+        const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-sorting_mode');
         if ((searchQuery == "") | (!isNum(searchQuery))) {
             sorting_mode_elem.removeAttribute('disabled');
+
         }
         else {
             sorting_mode_elem.value = 2;
@@ -105,7 +105,43 @@
         }
     }
 
-    $("#id_property_value_range").keyup(validate)
+    var total = $('#id_form-TOTAL_FORMS').val();
+    $("#id_form-" + (total-1) + "-property_value_range").keyup(validate)
     $(document).ready(validate)
+
+</script>
+
+<!-- Script: Add Property Field -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript">
+    function cloneMore(selector, type) {
+        var newElement = $(selector).clone(true);
+        var total = $('#id_' + type + '-TOTAL_FORMS').val();
+
+        newElement.find(':input').each(function () {
+            var name = $(this).attr('name').replace('-' + (total - 1) + '-', '-' + total + '-');
+            var id = 'id_' + name;
+            $(this).attr({ 'name': name, 'id': id }).val('').removeAttr('checked');
+            $(this).attr({ 'name': name, 'id': id }).val('').removeAttr('disabled');
+        });
+
+        newElement.find('label').each(function () {
+            var newFor = $(this).attr('for').replace('-' + (total - 1) + '-', '-' + total + '-');
+            $(this).attr('for', newFor);
+        });
+
+        total++;
+
+        $('#id_' + type + '-TOTAL_FORMS').val(total);
+        $(selector).after(newElement);
+
+        // Validating the new field property range to activate/deactivate sorting field.
+        $("#id_form-" + (total - 1) + "-property_value_range").keyup(validate)
+        $(document).ready(validate)
+    }
+
+    $('#id_add_property').click(function () {
+        cloneMore('tr#id_property_constraints:last', 'form');
+    });
 
 </script>

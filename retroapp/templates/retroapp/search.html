@@ -28,6 +28,7 @@
 
         <form action="" method="post">
             {% csrf_token %}
+            {{ property_formset.management_form }}
             {% include 'retroapp/search_form_lite.html' with form=form %}
 
             <table class="searchBtn">

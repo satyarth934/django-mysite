@@ -33,7 +33,7 @@ body input {
 
 /* DEBUGGING PURPOSE ONLY */
 table, th, tr, td {
-  /* border: 1px solid; */
+  border: 1px solid;
 }
 
 table.searchForm {
@@ -101,4 +101,9 @@ input.submitBtn {
   width: 75%;
   padding: 6px 12px;
   text-align: center;
+}
+
+input.addProperty {
+  width: auto;
+  text-align: right;
 }
