@@ -98,7 +98,7 @@ def search_lite(request):
 
 
 def pks_lite(request):
-    if "_search_query" in request.session:
+    if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
         # search_query = request.session.get('_search_query')
         search_query_smiles = request.session['_search_query_smiles']
