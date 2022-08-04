@@ -97,7 +97,6 @@ def search_lite(request):
             return redirect('pks', permanent=False)
 
 
-# TODO: Update pks function to use POST values fetched from the submitted form.
 def pks_lite(request):
     if "_search_query" in request.session:
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
