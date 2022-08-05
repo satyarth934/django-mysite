@@ -657,6 +657,8 @@ FodyWeavers.xsd
 # Custom files
 .DS_Store
 db.sqlite3
+extras/
+Untitled.ipynb
 retrotide-master
 retrotide-master.zip
 form_test_myview.html
