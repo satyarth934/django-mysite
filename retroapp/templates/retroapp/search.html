@@ -26,7 +26,7 @@
             </tr>
         </table>
 
-        <form action="" method="post">
+        <form action="" method="post" target="resultsFrame">
             {% csrf_token %}
             {{ property_formset.management_form }}
             {% include 'retroapp/search_form.html' with form=form %}
@@ -40,6 +40,9 @@
             </table>            
         </form>
 
+        <iframe name="resultsFrame" class="results">
+            <!-- 'retroapp/show_results.html' is being displayed here in the view function => pks_search_result! -->
+        </iframe>
         
     </body>
 </html>
