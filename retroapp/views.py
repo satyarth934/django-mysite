@@ -97,10 +97,94 @@ def search(request):
         if smiles_form.is_valid() and property_formset.is_valid():
             request.session['_search_query_smiles'] = smiles_form.cleaned_data
             request.session['_search_query_properties'] = [form.cleaned_data for form in property_formset]
-            return redirect('pks', permanent=False)
+            # return redirect('pks', permanent=False)
+            return pks_search_result(request)
 
 
-# View function for pks URL
+# View function for search results in the same search page
+def pks_search_result(request):
+    if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
+        request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
+        # search_query = request.session.get('_search_query')
+        search_query_smiles = request.session['_search_query_smiles']
+        search_query_properties = request.session['_search_query_properties']
+        print(f"{search_query_smiles = }")
+        print(f"{search_query_properties = }")
+        search_query = dict()
+        search_query["smiles_string"] = search_query_smiles["smiles_string"]
+        search_query["notes"] = search_query_smiles["notes"]
+        search_query["properties"] = search_query_properties
+        print(f"{search_query = }")
+
+        # Calling retrotide API
+        mol_properties = [d["molecular_property"] for d in search_query["properties"]]
+        retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
+
+        # Update the dataframe based on min-max ranges of all properties.
+        for search_query_property in search_query["properties"]:
+            mol_property = search_query_property["molecular_property"]
+            min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
+            max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
+            search_query_property["target_val"] = None
+
+            property_val_range = search_query_property["property_value_range"]
+            if property_val_range:
+                if isrange(property_val_range):    # Range is specified
+                    min_val, max_val = [float(range_val) for range_val in property_val_range.split(" - ")]
+                else:    # target value is specified
+                    search_query_property["target_val"] = float(property_val_range)                
+
+            retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
+        
+        # Get all the properties that have a sorting_mode specified or have a target value.
+        sorting_cols = [
+            sqprop["molecular_property"] for sqprop in search_query["properties"] if sqprop["sorting_mode"] in [ASCENDING, DESCENDING] or not isrange(sqprop["property_value_range"])
+        ]
+
+        # Bool list to specify property sorting in ascending order.
+        sorting_cols_asc = list()
+        for sqprop in search_query["properties"]:
+            if not isrange(sqprop["property_value_range"]):
+                sorting_cols_asc.append(True)
+            else:
+                sorting_cols_asc.append(sqprop["sorting_mode"] == ASCENDING)
+
+        # Target values corresponding to each property
+        prop_targets = [sqprop["target_val"] for sqprop in search_query["properties"]]
+
+        # function defining the key for sorting
+        def sorting_key(pd_series):
+            idx = sorting_cols.index(pd_series.name)
+            target = prop_targets[idx]
+            if target is None:
+                return pd_series
+            
+            target = [target] * len(pd_series)
+            return np.abs(np.array(target) - pd_series)
+
+        retro_df = retro_df.sort_values(
+            by=sorting_cols, 
+            ascending=sorting_cols_asc, 
+            key=sorting_key
+        )
+
+        # To reset the index value to start from 0 again
+        retro_df = retro_df.reset_index(drop=True)
+
+        context = {
+            "query_dict": search_query,
+            "keys": ["Rendered Molecule", *retro_df.keys()],
+            "df": retro_df,
+            "width": 243,
+        }
+        return render(request, "retroapp/show_results.html", context)
+
+    else:
+        warnings.warn("404: No search query!")
+        return HttpResponse("404: No search query!")
+
+
+# [DEPRECATED] View function for pks URL
 def pks(request):
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
