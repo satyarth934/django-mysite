@@ -2,86 +2,90 @@
 {% load static %}
 
 <html>
-{% include "./header.html" %}
+    {% include "./header.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/tables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tables.css' %}">
 
-<table style="margin-left:auto;margin-right:auto;">
-    <tr>
-        <th colspan={{ query_dict.items|length }}>
-            QUERY
-        </th>
-    </tr>
-
-    <tr>
-        {% for k, v in query_dict.items %}
-            <th style="color: black;">
-                {{ k }}
-            </th>
-        {% endfor %}
-    </tr>
-        
-    <tr>
-        {% for k, v in query_dict.items %}
-            <td>
-                {% if k == "smiles_string" %}
-                    <img style="width: 100%" alt="alt text" data-smilesq="{{ v | urlq }}" data-smiles="{{ v }}"
-                    src="/renderer/{{ v | urlq }}/{{ width }}" title={{ v }} />
-                {% else %}
-                    {{ v }}
-                {% endif %}
-            </td>
-        {% endfor %}
-    </tr>
-</table>
-
-<table style="margin-left:auto;margin-right:auto;">
-    <tr>
-        <td>
-            {{ df|length }} molecules found!
-        </td>
-    </tr>
-</table>
-
-<table style="width: 100%;">
-    <tr>
-        <th>
-            SNo
-        </th>
-
-        {% for k in keys %}
-            <th>
-                {{ k | upper | replace:"_| "}}
-            </th>
-        {% endfor %}
-    </tr>
-
-    {% for i, r in df.iterrows %}
+    <table style="margin-left:auto;margin-right:auto;">
         <tr>
-            <td>
-                {{ i | add:"+1" }}
-            </td>
+            <th colspan={{ query_dict.items|length }}>
+                QUERY
+            </th>
+        </tr>
 
-            <td>
-                <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
-                    src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" title={{ r.SMILES }} />
-            </td>
-
-            {% for data_item in r %}
+        <tr>
+            {% for k, v in query_dict.items %}
+                <th style="color: black;">
+                    {{ k }}
+                </th>
+            {% endfor %}
+        </tr>
+            
+        <tr>
+            {% for k, v in query_dict.items %}
                 <td>
-                    {% if data_item|isfloat %}
-                        {{ data_item|sigfig }}
-                    {% elif data_item|islist %}
-                        <div title="{{ data_item }}">
-                            Hover here to see the full data
-                        </div>
+                    {% if k == "smiles_string" %}
+                        <img style="width: 100%" alt="alt text" data-smilesq="{{ v | urlq }}" data-smiles="{{ v }}"
+                        src="/renderer/{{ v | urlq }}/{{ width }}" title={{ v }} />
+                    {% elif k == "properties" %}
+                        {% for prop_i in v%}
+                            {{ prop_i }}<br>
+                        {% endfor %}
                     {% else %}
-                        {{ data_item }}
+                        {{ v }}
                     {% endif %}
                 </td>
             {% endfor %}
         </tr>
-    {% endfor %}
-</table>
+    </table>
+
+    <table style="margin-left:auto;margin-right:auto;">
+        <tr>
+            <td>
+                {{ df|length }} molecules found!
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 100%;">
+        <tr>
+            <th>
+                SNo
+            </th>
+
+            {% for k in keys %}
+                <th>
+                    {{ k | upper | replace:"_| "}}
+                </th>
+            {% endfor %}
+        </tr>
+
+        {% for i, r in df.iterrows %}
+            <tr>
+                <td>
+                    {{ i | add:"+1" }}
+                </td>
+
+                <td>
+                    <img style="width: 100%" alt="alt text" data-smilesq="{{ r.SMILES | urlq }}" data-smiles="{{ r.SMILES }}"
+                        src="/renderer/{{ r.SMILES | urlq }}/{{ width }}" title={{ r.SMILES }} />
+                </td>
+
+                {% for data_item in r %}
+                    <td>
+                        {% if data_item|isfloat %}
+                            {{ data_item|sigfig }}
+                        {% elif data_item|islist %}
+                            <div title="{{ data_item }}">
+                                Hover here to see the full data
+                            </div>
+                        {% else %}
+                            {{ data_item }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
 
 </html>

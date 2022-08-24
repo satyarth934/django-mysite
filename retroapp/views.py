@@ -52,7 +52,7 @@ def home(request):
     return HttpResponse(rendered_str)
 
 
-def search_lite(request):
+def search(request):
     smiles_form = SMILESForm(
         initial={
             'smiles_string': None,
@@ -97,7 +97,7 @@ def search_lite(request):
             return redirect('pks', permanent=False)
 
 
-def pks_lite(request):
+def pks(request):
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
         # search_query = request.session.get('_search_query')
@@ -166,13 +166,13 @@ def pks_lite(request):
         # To reset the index value to start from 0 again
         retro_df = retro_df.reset_index(drop=True)
 
-        # Render the filtered dataframe to a webpage
-        table_rendered_str = showtable(
-            request, 
-            query_dict=search_query, 
-            retro_df=retro_df,
-        )
-        return HttpResponse(table_rendered_str)
+        context = {
+            "query_dict": search_query,
+            "keys": ["Rendered Molecule", *retro_df.keys()],
+            "df": retro_df,
+            "width": 243,
+        }
+        return render(request, "retroapp/showtable.html", context)
 
     else:
         warnings.warn("404: No search query!")
@@ -192,15 +192,13 @@ def retrotide_usage(request, smiles, width=243):
     retro_df = retrotide_call(smiles=smiles)
     print(retro_df)         # DELETE: only for debugging purposes
 
-    # show table for the return data frame from the API call
-    table_rendered_str = showtable(
-        request, 
-        query_dict={"smiles_string": smiles}, 
-        retro_df=retro_df, 
-        width=width
-    )
-    
-    return HttpResponse(table_rendered_str)
+    context = {
+        "query_dict": {"smiles_string": smiles},
+        "keys": ["Rendered Molecule", *retro_df.keys()],
+        "df": retro_df,
+        "width": width,
+    }
+    return render(request, "retroapp/showtable.html", context)
 
 ########################
 # Dependency functions #
@@ -231,18 +229,6 @@ def retrotide_call(smiles, properties=None):
             df_dict[property].append(predict_property_api(property=property))
 
     return pd.DataFrame(df_dict)
-
-
-def showtable(request, query_dict, retro_df, width=243):
-    template = loader.get_template("retroapp/showtable.html")
-    context = {
-        "query_dict": query_dict,
-        "keys": ["Rendered Molecule", *retro_df.keys()],
-        "df": retro_df,
-        "width": width,
-    }
-    rendered_str = template.render(context, request)
-    return rendered_str
 
 
 def isrange(property_value_str):
