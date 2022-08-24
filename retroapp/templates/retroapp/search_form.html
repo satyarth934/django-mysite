@@ -100,15 +100,24 @@
         var searchQuery = $("#id_form-" + (total_forms-1) + "-property_value_range").val();
         console.log("check if input is number - " + isNum(searchQuery));
 
+        // checking if the input is a number or a range
         const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-sorting_mode');
         if ((searchQuery == "") | (!isNum(searchQuery))) {
             sorting_mode_elem.removeAttribute('disabled');
-
         }
         else {
             sorting_mode_elem.value = 2;
             sorting_mode_elem.setAttribute('disabled', '');
         }
+
+        // TODO: Make sure that first number is smaller than second number
+        // sq_minmax = searchQuery.split("-");
+        // console.log(sq_minmax);
+        // sq_minval = Number(sq_minmax[0])
+        // sq_maxval = Number(sq_minmax[1])
+        // if (sq_minval > sq_maxval){
+        //     alert("Invalid range!!");
+        // }
     }
 
     var total = $('#id_form-TOTAL_FORMS').val();
