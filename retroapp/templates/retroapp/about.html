@@ -1,0 +1,138 @@
+<html>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/about.css' %}">
+
+<!-- this include tag should be at the top of each page to add the header above the body-->
+{% include "retroapp/header.html" %}
+
+<body>
+    
+    <table class="aboutTitle">
+        <tr>
+            <th>
+                What is the Biomolecular Architect?
+            </th>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <td>
+                The Biomolecular Architect is a retrobiosynthesis tool that not only recommends the reactions (and encoding DNA) to
+                synthesize a molecule, but also recommends molecules that fit a specification (e.g., an octane number of 80 or a binding
+                affinity of 50 nM to a given protein).
+
+                Recommending molecules that fit a specification is what is called inverse molecular design.
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <img src="{% static 'media/biomolecular_architect.png' %}" alt="bio_arch" />
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                How does it work?
+            </th>
+        </tr>
+
+        <tr>
+            <td>
+                The Biomolecular architect is based in <a href="https://clustercad.jbei.org/">ClusterCAD</a> and Retrotide (in preparation) for retrobiosynthesis and <a href="https://chemrxiv.org/engage/chemrxiv/article-details/6227f24d57a9d2462f783d64">Macaw</a> and
+                <a href="https://graphdot.readthedocs.io/en/latest/">Graphdot</a> for molecular inverse design and molecule property prediction.
+                
+                ClusterCAD and Retrotide offer retrobiosynthesis capabilities (i.e. recommendation of reactions and DNA to synthesis a
+                particle) based on <a href="https://en.wikipedia.org/wiki/Polyketide_synthase">polyketide synthases</a> (PKSs). PKSs are modular enzymes that can synthesize a combinatorially large
+                number of molecules (e.g., antibiotics). We will soon complement the PKS retrobiosynthesis capabilities with general
+                biological and chemical retrobiosynthesis so as to cover the largest amount of chemical space.
+                
+                Macaw offers molecular inverse design and property prediction capabilities based on SELFIES sampling and molecular
+                embedding. Graphdot offers molecular property prediction based on graphs.
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                Citing Biomolecular architect
+            </th>
+        </tr>
+    
+        <tr>
+            <td>
+                The paper describing this site is still in production. If you use it, however, please cite:
+                
+                <ul>
+                    <li>
+                        ClusterCAD: a computational platform for type I modular polyketide synthase design. Eng, C.H.*, Backman, T.W.H.*,
+                        Bailey, C.B., Magnan, C., Martin, H.G., Katz, L., Baldi, P., Keasling, J.D. Nucleic Acids Research, 2017 Oct.
+                        <a href="https://doi.org/10.1093/nar/gkx893">https://doi.org/10.1093/nar/gkx893</a>
+                    </li>
+
+                    <li>
+                        Tang, Yu-Hang, and Wibe A. de Jong. "Prediction of atomization energy using graph kernel and active learning." The
+                        Journal of chemical physics 150, no. 4 (2019): 044107.
+                    </li>
+
+                    <li>
+                        Tang, Yu-Hang, Oguz Selvitopi, Doru Thom Popovici, and Aydın Buluç. "A High-Throughput Solver for Marginalized Graph
+                        Kernels on GPU." In 2020 IEEE International Parallel and Distributed Processing Symposium (IPDPS), pp. 728-738. IEEE,
+                        2020.
+                    </li>
+
+                    <li>
+                        Blay V, Radivojevic T, Allen JE, Hudson CM, Garcia-Martin H. MACAW: an accessible tool for molecular embedding and
+                        inverse molecular design. ChemRxiv. Cambridge: Cambridge Open Engage; 2022; This content is a preprint and has not been
+                        peer-reviewed.
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <table class="aboutContent">
+        <tr>
+            <th>
+                References
+            </th>
+        </tr>
+    
+        <tr>
+            <td>
+                <ol>
+                    <li>
+                        Django Software Foundation, 2019. Django, Available at: <a href="https://www.djangoproject.com/">https://djangoproject.com</a>.
+                        
+                    </li>
+                    <li>
+                        Retrotide
+                    </li>
+                    <li>
+                        <a href="https://graphdot.readthedocs.io/en/latest">Graphdot</a>
+                        <ul>
+                            <li>
+                                Tang, Yu-Hang, and Wibe A. de Jong. “Prediction of atomization energy using graph kernel and active learning.” The Journal of chemical physics 150, no. 4 (2019): 044107.
+                            </li>
+                            <li>
+                                Tang, Yu-Hang, Oguz Selvitopi, Doru Thom Popovici, and Aydın Buluç. “A High-Throughput Solver for Marginalized Graph Kernels on GPU.” In 2020 IEEE International Parallel and Distributed Processing Symposium (IPDPS), pp. 728-738. IEEE, 2020.
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="https://pubs.acs.org/doi/10.1021/acs.jcim.7b00425"> Probst, D. and Reymond, J.L., 2018. SmilesDrawer: parsing and drawing SMILES-encoded molecular structures using client-side JavaScript. Journal of chemical information and modeling, 58(1), pp.1-7. </a>
+                        <a href="https://github.com/reymond-group/smilesDrawer">[Github]</a>
+                    </li>
+                </ol>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
+

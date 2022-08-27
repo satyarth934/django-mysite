@@ -1,8 +1,10 @@
 from django import template
 # from django.utils.http import urlquote
 from urllib.parse import quote as urlquote
+
 from rdkit import Chem
 import re
+import numbers
 
 
 register = template.Library()
@@ -53,3 +55,24 @@ def replace(value, arg):
 
     what, to = arg.split('|')
     return value.replace(what, to)
+
+
+@register.filter
+def isnumeric(value):
+    return isinstance(value, numbers.Number)
+
+
+@register.filter
+def isfloat(value):
+    return isinstance(value, float)
+
+
+@register.filter
+def islist(value):
+    return isinstance(value, list)
+
+@register.filter
+def index(indexable, i):
+    if i >= len(indexable):
+        return f"ERROR: Index out of range. index={i}; len(list)={len(indexable)}"
+    return indexable[i]

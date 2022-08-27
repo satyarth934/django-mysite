@@ -1,0 +1,54 @@
+<html>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+
+  <!-- this include tag should be at the top of each page to add the header above the body-->
+  {% include "retroapp/header.html" %}
+
+  <body>
+    <table class="loginTable" cellspacing="10">
+      <tr>
+        <td colspan="2">
+          Please login with your LDAP username / password.
+        </td>
+      </tr>
+
+      <tr>
+        <td>Username</td>
+        <td>
+          <input class="inputPrimary" type="text" />
+        </td>
+      </tr>
+
+      <tr>
+        <td>Password</td>
+        <td>
+          <input class="inputPrimary" type="password" />
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="2">
+          <a class="loginBtn">
+            <div>Login</div>
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <!-- DELETE AFTER LOGIN PAGE IS IMPLEMENTED -->
+    <!-- <p class="loginBox">Please login with your LDAP username / password.</p>
+    <div class="loginBox">
+      Username: <input class="usernameInput" type="text" />
+    </div>
+    <div class="loginBox">
+      Password: <input class="passwordInput" type="password" />
+    </div>
+    <div class="submitButton loginBox" >
+      <a class="loginBtn">
+        <div>Login</div>
+      </a>
+    </div> -->
+  </body>
+</html>

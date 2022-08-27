@@ -1,0 +1,12 @@
+asgiref
+certifi==2021.10.8
+Django
+numpy
+pandas
+Pillow
+python-dateutil
+pytz
+rdkit-pypi==2022.3.2
+six
+sqlparse
+django-widget-tweaks

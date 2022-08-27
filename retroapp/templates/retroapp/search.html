@@ -1,0 +1,48 @@
+<html>
+    <head>
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}">
+        
+        <!-- SMILES Drawer -->
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Smiles Drawer Example</title>
+        <meta name="description" content="A minimal smiles drawer example." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        <link href="https://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" />
+    </head>
+
+    <!-- this include tag should be at the top of each page to add the header above the body-->
+    {% include "retroapp/header.html" %}
+
+    <body>
+        <table class="searchTitle">
+            <tr>
+                <td>
+                    Enter molecule SMILES data and property model
+                </td>
+            </tr>
+        </table>
+
+        <form action="" method="post" target="resultsFrame">
+            {% csrf_token %}
+            {{ property_formset.management_form }}
+            {% include 'retroapp/search_form.html' with form=form %}
+
+            <table class="searchBtn">
+                <tr>
+                    <td>
+                        <input class="submitBtn" type="submit" value="Submit">
+                    </td>
+                </tr>
+            </table>            
+        </form>
+
+        <iframe name="resultsFrame" class="results">
+            <!-- 'retroapp/show_results.html' is being displayed here in the view function => pks_search_result! -->
+        </iframe>
+        
+    </body>
+</html>

@@ -12,15 +12,15 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 
 table {
   text-align: center;
-  color:  #13334c;
-  border:  2px solid #005792;
+  color:  #333;
+  border:  2px solid #333;
   box-sizing:  border-box;
 }
 
 th {
-  border-bottom:  2px solid #005792;
+  border-bottom:  2px solid #333;
   background-color:  #95cdb3;
-  color: #005792;
+  color: #333;
   font-weight:  bold;
   text-align:  center;
   padding:  15px;
@@ -33,7 +33,8 @@ tr {
 
 td {
   text-align:  center;
-  border:  1px solid #005792;
+  vertical-align: middle;
+  border:  1px solid #333;
   background-color: #ffffdd;
   color:  #1796a9;
   padding:  15px;
