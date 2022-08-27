@@ -1,19 +1,8 @@
 from collections import defaultdict
 from django.shortcuts import render, redirect
-# from django.urls import path, re_path
 
-# from django.http import Http404, HttpResponse, JsonResponse
 from django.http import HttpResponse, JsonResponse
 from rdkit import Chem
-# from rdkit.Chem import Draw, rdFMCS, AllChem
-
-# from django.utils.http import urlunquote
-# from urllib.parse import unquote as urlunquote
-
-# from django.views.decorators.cache import cache_page
-# import re
-# import xml.etree.ElementTree as ET
-# from io import BytesIO
 
 import pandas as pd
 from django.template import loader
@@ -27,16 +16,20 @@ from mysite import utils
 import warnings
 warnings.formatwarning = utils.warning_format    # Defining a specific format to print warnings on console
 
+from datetime import datetime
 import numpy as np
+import logging
+logger = logging.getLogger(f"{__name__}")
 
-# import retroapp.urls as retroapp_urls
 from retroapp.forms import SMILESForm, PropertyForm
+from retroapp import utils
 
 ######################
 # Webpage views here #
 ######################
 
 # View function for index (blank) URL
+@utils.log_function
 def index(request):
     # url_patterns = [str(u.pattern) for u in retroapp_urls.urlpatterns]
     # url_pattern_names = [u.name for u in retroapp_urls.urlpatterns]
@@ -47,6 +40,7 @@ def index(request):
 
 
 # View function for home URL
+@utils.log_function
 def home(request):
     template = loader.get_template("retroapp/home.html")
     context = {}
@@ -55,6 +49,7 @@ def home(request):
 
 
 # View function for search URL
+@utils.log_function
 def search(request):
     smiles_form = SMILESForm(
         initial={
@@ -78,20 +73,20 @@ def search(request):
         property_formset = PropertyFormSet(request.POST)
 
         if smiles_form.is_valid():
-            print("[VALID] smiles_form!!")
-            print(smiles_form.cleaned_data)
+            logger.info("[VALID] smiles_form!!")
+            logger.info(smiles_form.cleaned_data)
         else:
-            print("Invalid smiles_form!!")
-            pprint(smiles_form.__dict__)
+            logger.error("Invalid smiles_form!!")
+            logger.info(smiles_form.__dict__)
         
         if property_formset.is_valid():
-            print("[VALID] property_formset")
+            logger.info("[VALID] property_formset")
             for i, form in enumerate(property_formset):
-                print(f"---> FORM {i}")
-                print(form.cleaned_data)
+                logger.info(f"---> FORM {i}")
+                logger.info(form.cleaned_data)
         else:
-            print("Invalid property_Formset!!")
-            print(property_formset.errors)
+            logger.error("Invalid property_Formset!!")
+            logger.info(property_formset.errors)
         
         # return render(request, "formsetapp/index.html", {})
         if smiles_form.is_valid() and property_formset.is_valid():
@@ -102,19 +97,20 @@ def search(request):
 
 
 # View function for search results in the same search page
+@utils.log_function
 def pks_search_result(request):
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
         # search_query = request.session.get('_search_query')
         search_query_smiles = request.session['_search_query_smiles']
         search_query_properties = request.session['_search_query_properties']
-        print(f"{search_query_smiles = }")
-        print(f"{search_query_properties = }")
+        logger.info(f"{search_query_smiles = }")
+        logger.info(f"{search_query_properties = }")
         search_query = dict()
         search_query["smiles_string"] = search_query_smiles["smiles_string"]
         search_query["notes"] = search_query_smiles["notes"]
         search_query["properties"] = search_query_properties
-        print(f"{search_query = }")
+        logger.info(f"{search_query = }")
 
         # Calling retrotide API
         mol_properties = [d["molecular_property"] for d in search_query["properties"]]
@@ -180,11 +176,12 @@ def pks_search_result(request):
         return render(request, "retroapp/show_results.html", context)
 
     else:
-        warnings.warn("404: No search query!")
+        logger.warn("404: No search query!")
         return HttpResponse("404: No search query!")
 
 
 # [DEPRECATED] View function for pks URL
+@utils.log_function
 def pks(request):
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
@@ -263,11 +260,12 @@ def pks(request):
         return render(request, "retroapp/showtable.html", context)
 
     else:
-        warnings.warn("404: No search query!")
+        logger.warn("404: No search query!")
         return HttpResponse("404: No search query!")
         
 
 # View function for about URL
+@utils.log_function
 def about(request):
     template = loader.get_template("retroapp/about.html")
     context = {}
@@ -276,6 +274,7 @@ def about(request):
 
 
 # View function for smilesstr URL
+@utils.log_function
 def retrotide_usage(request, smiles, width=243):
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
@@ -299,6 +298,7 @@ def predict_property_api(property):
     return np.random.randint(0,100)
 
 
+@utils.log_function
 def retrotide_call(smiles, properties=None):
     designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
 
@@ -307,7 +307,7 @@ def retrotide_call(smiles, properties=None):
         
     else:
         properties = []
-        warnings.warn(f"No properties mentioned.")
+        logger.warn(f"No properties mentioned.")
 
     df_dict = defaultdict(list)
 
