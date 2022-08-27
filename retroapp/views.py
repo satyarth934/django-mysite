@@ -104,13 +104,13 @@ def pks_search_result(request):
         # search_query = request.session.get('_search_query')
         search_query_smiles = request.session['_search_query_smiles']
         search_query_properties = request.session['_search_query_properties']
-        logger.info(f"{search_query_smiles = }")
-        logger.info(f"{search_query_properties = }")
+        logger.info(f"search_query_smiles = {search_query_smiles}")
+        logger.info(f"search_query_properties = {search_query_properties}")
         search_query = dict()
         search_query["smiles_string"] = search_query_smiles["smiles_string"]
         search_query["notes"] = search_query_smiles["notes"]
         search_query["properties"] = search_query_properties
-        logger.info(f"{search_query = }")
+        logger.info(f"search_query = {search_query}")
 
         # Calling retrotide API
         mol_properties = [d["molecular_property"] for d in search_query["properties"]]
