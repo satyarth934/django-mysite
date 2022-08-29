@@ -160,15 +160,15 @@ LOGGING = {
             'filename': logs_path,
         },
 
-        # 'console': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.StreamHandler',
-        #     'formatter': 'default',
-        # }
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        }
     },
     'loggers': {
         '': {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': False,
         }
