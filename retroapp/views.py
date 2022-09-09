@@ -1,7 +1,10 @@
 from collections import defaultdict
+from email import message
 from django.shortcuts import render, redirect
 
 from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+
 from rdkit import Chem
 
 import pandas as pd
@@ -42,6 +45,13 @@ def index(request):
 # View function for home URL
 @utils.log_function
 def home(request):
+
+    # DELETE: only for debugging purposes
+    if request.user.is_authenticated:
+        print("request.user:", request.user)
+        print("request.user.is_authenticated:", request.user.is_authenticated)
+        print("request.user.socialaccount_set.all()[0].get_avatar_url():", request.user.socialaccount_set.all()[0].get_avatar_url())
+
     template = loader.get_template("retroapp/home.html")
     context = {}
     rendered_str = template.render(context, request)
@@ -51,6 +61,21 @@ def home(request):
 # View function for search URL
 @utils.log_function
 def search(request):
+    #####################################################################
+    # When user is NOT logged in. 
+    #####################################################################
+    if not request.user.is_authenticated:
+        context = {
+            "message": "Please login to use the Search functionality!!",
+            "message_tag": "ERROR",
+            # "remove_tabs": True,
+        }
+
+        return render(request, "retroapp/guest_landing_page.html", context)
+    
+    #####################################################################
+    # Open the Search Page only when the user is logged in. 
+    #####################################################################
     smiles_form = SMILESForm(
         initial={
             'smiles_string': None,
@@ -167,6 +192,11 @@ def pks_search_result(request):
         # To reset the index value to start from 0 again
         retro_df = retro_df.reset_index(drop=True)
 
+        # TODO: map the sulfur replacement function here for all the molecules.
+        # TODO: Find an alternate more efficient implementation. This will take around 5-7 minutes for a million rows.
+        with utils.ExecTimeCM("pd map") as map_et:
+            retro_df['SMILES'] = retro_df['SMILES'].map(clean_sulfur_from_smiles_string)
+        
         context = {
             "query_dict": search_query,
             "keys": ["Rendered Molecule", *retro_df.keys()],
@@ -264,6 +294,31 @@ def pks(request):
         return HttpResponse("404: No search query!")
         
 
+# Placeholder for the history page (contains list of user's all old query runs)
+@utils.log_function
+def history(request):
+    # TODO: Implement this view function
+    # messages.info(request, "Checking django msg.")
+
+    if request.user.is_authenticated:
+        # messages.info(request, "Your past queries...")
+        context = {
+            "message": "Your past queries...",
+            "message_tag": "INFO",
+        }
+        ...
+    
+    else:
+        # messages.error(request, "Please login to view your past queries!!")
+        context = {
+            "message": "Please login to view your past queries!!",
+            "message_tag": "ERROR",
+            # "remove_tabs": True,
+        }
+
+    return render(request, "retroapp/guest_landing_page.html", context)
+
+
 # View function for about URL
 @utils.log_function
 def about(request):
@@ -323,3 +378,17 @@ def retrotide_call(smiles, properties=None):
 
 def isrange(property_value_str):
     return " - " in property_value_str
+
+
+def clean_sulfur_from_smiles_string(input_smiles, idx=0):
+    try:
+        input_mol = Chem.MolFromSmiles(input_smiles)
+        Chem.SanitizeMol(input_mol)
+        rxn = Chem.AllChem.ReactionFromSmarts('[C:1](=[O:2])[S:3]>>[C:1](=[O:2])[O].[S:3]')
+        product = rxn.RunReactants((input_mol,))[idx][0]
+        Chem.SanitizeMol(product)
+    except Exception as e:
+        print("input_smiles:", input_smiles)
+        raise e
+
+    return Chem.MolToSmiles(product)

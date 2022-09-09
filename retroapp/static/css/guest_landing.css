@@ -1,0 +1,36 @@
+table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+  border-collapse: collapse;
+  font-family:  'calibri', sans-serif;
+}
+
+table {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10%;
+  width: 100%;
+}
+
+th {
+  border-bottom:  2px solid #333;
+  color: #333;
+  font-weight:  bold;
+  text-align:  center;
+  padding:  15px;
+}
+
+tr {
+}
+
+td {
+  text-align:  center;
+  vertical-align: middle;
+  padding:  15px;
+}
