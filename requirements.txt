@@ -10,3 +10,6 @@ rdkit-pypi==2022.3.2
 six
 sqlparse
 django-widget-tweaks
+mysqlclient
+pymysql
+django-allauth

@@ -57,3 +57,4 @@ RUN cd /root/retrotide && \
 RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
 WORKDIR /root/django-mysite
 
+# CMD python3 manage.py runserver 0.0.0.0:8000
