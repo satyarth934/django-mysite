@@ -10,7 +10,7 @@ urlpatterns = [
     
     path('home', views.home, name='home'),
     path('search', views.search, name='search'),
-    path('pks', views.pks, name='pks'),
+    # path('pks', views.pks, name='pks'),    # Not useful anymore    # DELETE
     path('history', views.history, name='history'),
     path('about', views.about, name='about'),
     re_path(r'(\S+)/(\d{1,4})$', views.retrotide_usage, name='smilestr'),

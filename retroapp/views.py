@@ -9,7 +9,7 @@ from rdkit import Chem
 
 import pandas as pd
 from django.template import loader
-from django.forms import formset_factory
+from django.forms import formset_factory, modelformset_factory
 from retroapp import constants
 from retroapp.constants import ASCENDING, DESCENDING, NO_SORT, MOLECULE_PROPERTIES, SORTING_OPTIONS
 
@@ -24,7 +24,8 @@ import numpy as np
 import logging
 logger = logging.getLogger(f"{__name__}")
 
-from retroapp.forms import SMILESForm, PropertyForm
+from retroapp.models import QueryDB, QueryPropertyDB, QueryResultsDB
+from retroapp.forms_2 import FormQuery, FormQueryProperty
 from retroapp import utils
 
 ######################
@@ -34,11 +35,6 @@ from retroapp import utils
 # View function for index (blank) URL
 @utils.log_function
 def index(request):
-    # url_patterns = [str(u.pattern) for u in retroapp_urls.urlpatterns]
-    # url_pattern_names = [u.name for u in retroapp_urls.urlpatterns]
-    # print(url_pattern_names)
-    # return HttpResponse(f"You're at retroapp. Append smile string in the URL to invoke the retrotide API.<br><br>Patterns:<br>{url_patterns}<br><br>Extension calls:<br>{url_pattern_names}")
-
     return redirect('home', permanent=False)
 
 
@@ -76,13 +72,14 @@ def search(request):
     #####################################################################
     # Open the Search Page only when the user is logged in. 
     #####################################################################
-    smiles_form = SMILESForm(
+    # smiles_form = SMILESForm(
+    smiles_form = FormQuery(
         initial={
-            'smiles_string': None,
-            'notes': None,
+            'Q_smiles': None,
+            'Q_notes': None,
         },
     )
-    PropertyFormSet = formset_factory(PropertyForm)
+    PropertyFormSet = formset_factory(FormQueryProperty)
 
     # If this is a GET (or any other method) create the default form.
     if request.method != "POST":
@@ -94,23 +91,49 @@ def search(request):
         return render(request, "retroapp/search.html", context)
     
     else:
-        smiles_form = SMILESForm(request.POST)
+        smiles_form = FormQuery(request.POST)
         property_formset = PropertyFormSet(request.POST)
+        property_formset.form_kwargs["empty_permitted"] = False
 
         if smiles_form.is_valid():
             logger.info("[VALID] smiles_form!!")
             logger.info(smiles_form.cleaned_data)
+
+            smiles_form_to_db = smiles_form.save(commit=False)
+            smiles_form_to_db.Username = request.user
+            smiles_form_to_db.Full_name = request.user.socialaccount_set.all()[0].extra_data['name']
+            smiles_form_to_db.Email = request.user.socialaccount_set.all()[0].extra_data['email']
+            
+            smiles_form_to_db.save()
+
         else:
-            logger.error("Invalid smiles_form!!")
+            logger.error("[INVALID] smiles_form!!")
             logger.info(smiles_form.__dict__)
         
         if property_formset.is_valid():
             logger.info("[VALID] property_formset")
+
+            Q_uuid_fk = QueryDB.objects.last()
+
             for i, form in enumerate(property_formset):
                 logger.info(f"---> FORM {i}")
                 logger.info(form.cleaned_data)
+
+                form_to_db = form.save(commit=False)
+                if isrange(form.cleaned_data["property_value_range"]):
+                    min_val, max_val = form.cleaned_data['property_value_range'].split(" - ")
+                    form_to_db.Min_value = float(min_val)
+                    form_to_db.Max_value = float(max_val)
+                    
+                elif (form.cleaned_data["property_value_range"] != "") and (form.cleaned_data["property_value_range"] is not None):
+                    form_to_db.Target_value = float(form.cleaned_data["property_value_range"])
+                else:
+                    pass
+                form_to_db.Q_uuid = Q_uuid_fk
+                form_to_db.save()            
+
         else:
-            logger.error("Invalid property_Formset!!")
+            logger.error("[INVALID] property_Formset!!")
             logger.info(property_formset.errors)
         
         # return render(request, "formsetapp/index.html", {})
@@ -132,18 +155,25 @@ def pks_search_result(request):
         logger.info(f"search_query_smiles = {search_query_smiles}")
         logger.info(f"search_query_properties = {search_query_properties}")
         search_query = dict()
-        search_query["smiles_string"] = search_query_smiles["smiles_string"]
-        search_query["notes"] = search_query_smiles["notes"]
+        search_query["smiles_string"] = search_query_smiles["Q_smiles"]
+        search_query["notes"] = search_query_smiles["Q_notes"]
         search_query["properties"] = search_query_properties
         logger.info(f"search_query = {search_query}")
 
         # Calling retrotide API
-        mol_properties = [d["molecular_property"] for d in search_query["properties"]]
+        # mol_properties = [d["molecular_property"] for d in search_query["properties"]]
+        # mol_properties = [d["Property_name"] for d in search_query["properties"]]
+        mol_properties = [
+            list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
+            for d in search_query["properties"]
+        ]
         retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
-
+        
         # Update the dataframe based on min-max ranges of all properties.
         for search_query_property in search_query["properties"]:
-            mol_property = search_query_property["molecular_property"]
+            # mol_property = search_query_property["molecular_property"]
+            # mol_property = search_query_property["Property_name"]
+            mol_property = list(constants.MOLECULE_PROPERTIES.keys())[search_query_property["Property_name"]]
             min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
             max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
             search_query_property["target_val"] = None
@@ -157,18 +187,22 @@ def pks_search_result(request):
 
             retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
         
-        # Get all the properties that have a sorting_mode specified or have a target value.
-        sorting_cols = [
-            sqprop["molecular_property"] for sqprop in search_query["properties"] if sqprop["sorting_mode"] in [ASCENDING, DESCENDING] or not isrange(sqprop["property_value_range"])
-        ]
-
-        # Bool list to specify property sorting in ascending order.
+        # Get all properties and their corresponding sorting modes (bool value)
+        sorting_cols = list()
         sorting_cols_asc = list()
         for sqprop in search_query["properties"]:
-            if not isrange(sqprop["property_value_range"]):
+            property_name_str = list(constants.MOLECULE_PROPERTIES.keys())[sqprop["Property_name"]]
+            
+            # Target value is defined (always ascending)
+            if (sqprop["property_value_range"] != "") and (not isrange(sqprop["property_value_range"])):
+                sorting_cols.append(property_name_str)
                 sorting_cols_asc.append(True)
-            else:
-                sorting_cols_asc.append(sqprop["sorting_mode"] == ASCENDING)
+            
+            else:    # Either blank or range but not target value
+                # Sorting mode is defined (ascending | descending)
+                if (sqprop["Sorting_mode"] in [ASCENDING, DESCENDING]):
+                    sorting_cols.append(property_name_str)
+                    sorting_cols_asc.append(sqprop["Sorting_mode"] == ASCENDING)
 
         # Target values corresponding to each property
         prop_targets = [sqprop["target_val"] for sqprop in search_query["properties"]]
@@ -194,9 +228,32 @@ def pks_search_result(request):
 
         # TODO: map the sulfur replacement function here for all the molecules.
         # TODO: Find an alternate more efficient implementation. This will take around 5-7 minutes for a million rows.
-        with utils.ExecTimeCM("pd map") as map_et:
-            retro_df['SMILES'] = retro_df['SMILES'].map(clean_sulfur_from_smiles_string)
+        # with utils.ExecTimeCM("pd map") as map_et:
+        retro_df['SMILES'] = retro_df['SMILES'].map(clean_sulfur_from_smiles_string)
         
+        # Write results to DB
+        print("--- retro_df ---")
+        print(retro_df.columns)
+        print("--- xxxxxxxx ---")
+        retro_df_dict = retro_df.to_dict('records')
+
+        # TODO: this is currently breaking!!!
+        model_instances = [QueryResultsDB(
+            Q_uuid_id=QueryDB.objects.last(),
+            SMILES=record['SMILES'],
+            Retrotide_Similarity_SCORE=record['Retrotide_Similarity_SCORE'],
+            DESIGN=record['DESIGN'],
+            Cetane_number=None if 'Cetane_number' not in record else record['Cetane_number'],
+            Research_octane_number=None if 'Research_octane_number' not in record else record['Research_octane_number'],
+            Melting_point=None if 'Melting_point' not in record else record['Melting_point'],
+            Flash_point=None if 'Flash_point' not in record else record['Flash_point'],
+            Yield_sooting_index=None if 'Yield_sooting_index' not in record else record['Yield_sooting_index'],
+            H1_receptor_pKd=None if 'H1_receptor_pKd' not in record else record['H1_receptor_pKd'],
+            M2_receptor_pKd=None if 'M2_receptor_pKd' not in record else record['M2_receptor_pKd'],
+        ) for record in retro_df_dict]
+
+        QueryResultsDB.objects.bulk_create(model_instances)
+
         context = {
             "query_dict": search_query,
             "keys": ["Rendered Molecule", *retro_df.keys()],
@@ -209,90 +266,6 @@ def pks_search_result(request):
         logger.warn("404: No search query!")
         return HttpResponse("404: No search query!")
 
-
-# [DEPRECATED] View function for pks URL
-@utils.log_function
-def pks(request):
-    if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
-        request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
-        # search_query = request.session.get('_search_query')
-        search_query_smiles = request.session['_search_query_smiles']
-        search_query_properties = request.session['_search_query_properties']
-        print(f"search_query_smiles = {search_query_smiles}")
-        print(f"search_query_properties = {search_query_properties}")
-        search_query = dict()
-        search_query["smiles_string"] = search_query_smiles["smiles_string"]
-        search_query["notes"] = search_query_smiles["notes"]
-        search_query["properties"] = search_query_properties
-        print(f"search_query = {search_query}")
-
-        # Calling retrotide API
-        mol_properties = [d["molecular_property"] for d in search_query["properties"]]
-        retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
-
-        # Update the dataframe based on min-max ranges of all properties.
-        for search_query_property in search_query["properties"]:
-            mol_property = search_query_property["molecular_property"]
-            min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
-            max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
-            search_query_property["target_val"] = None
-
-            property_val_range = search_query_property["property_value_range"]
-            if property_val_range:
-                if isrange(property_val_range):    # Range is specified
-                    min_val, max_val = [float(range_val) for range_val in property_val_range.split(" - ")]
-                else:    # target value is specified
-                    search_query_property["target_val"] = float(property_val_range)                
-
-            retro_df = retro_df[(retro_df[mol_property]>=min_val ) & (retro_df[mol_property]<=max_val)]
-        
-        # Get all the properties that have a sorting_mode specified or have a target value.
-        sorting_cols = [
-            sqprop["molecular_property"] for sqprop in search_query["properties"] if sqprop["sorting_mode"] in [ASCENDING, DESCENDING] or not isrange(sqprop["property_value_range"])
-        ]
-
-        # Bool list to specify property sorting in ascending order.
-        sorting_cols_asc = list()
-        for sqprop in search_query["properties"]:
-            if not isrange(sqprop["property_value_range"]):
-                sorting_cols_asc.append(True)
-            else:
-                sorting_cols_asc.append(sqprop["sorting_mode"] == ASCENDING)
-
-        # Target values corresponding to each property
-        prop_targets = [sqprop["target_val"] for sqprop in search_query["properties"]]
-
-        # function defining the key for sorting
-        def sorting_key(pd_series):
-            idx = sorting_cols.index(pd_series.name)
-            target = prop_targets[idx]
-            if target is None:
-                return pd_series
-            
-            target = [target] * len(pd_series)
-            return np.abs(np.array(target) - pd_series)
-
-        retro_df = retro_df.sort_values(
-            by=sorting_cols, 
-            ascending=sorting_cols_asc, 
-            key=sorting_key
-        )
-
-        # To reset the index value to start from 0 again
-        retro_df = retro_df.reset_index(drop=True)
-
-        context = {
-            "query_dict": search_query,
-            "keys": ["Rendered Molecule", *retro_df.keys()],
-            "df": retro_df,
-            "width": 243,
-        }
-        return render(request, "retroapp/showtable.html", context)
-
-    else:
-        logger.warn("404: No search query!")
-        return HttpResponse("404: No search query!")
-        
 
 # Placeholder for the history page (contains list of user's all old query runs)
 @utils.log_function
@@ -372,6 +345,20 @@ def retrotide_call(smiles, properties=None):
         df_dict["DESIGN"].append(designs[-1][i][0].modules)
         for property in properties:
             df_dict[property].append(predict_property_api(property=property))
+
+    # DELETE
+    # print("--- properties ---")
+    # print(properties)
+    # print("--- df_dict ---")
+    # for k in df_dict:
+    #     print(k)
+    #     print(len(df_dict[k]))
+    # print("--- xxxxxxx ---")
+
+    try:
+        output_df = pd.DataFrame(df_dict)
+    except ValueError as ve:
+        raise ValueError(f"{ve} - Check if multiple constraints are defined for the same Molecular Property.")
 
     return pd.DataFrame(df_dict)
 

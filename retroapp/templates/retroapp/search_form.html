@@ -25,18 +25,18 @@
 
     <!-- SMILES and Property Form -->
     <tr>
-        <td> {{ smiles_form.smiles_string.label }} </td>
-        <td colspan="5"> {{ smiles_form.smiles_string }} </td>
+        <td> {{ smiles_form.Q_smiles.label }} </td>
+        <td colspan="5"> {{ smiles_form.Q_smiles }} </td>
     </tr>
 
     {% for form in property_formset %}
         <tr id="id_property_constraints">
-            <td> {{ form.molecular_property.label }} </td>
-            <td> {{ form.molecular_property }} </td>
+            <td> {{ form.Property_name.label }} </td>
+            <td> {{ form.Property_name }} </td>
             <td> {{ form.property_value_range.label }} </td>
             <td> {{ form.property_value_range }} </td>
-            <td> {{ form.sorting_mode.label }} </td>
-            <td> {{ form.sorting_mode }} </td>
+            <td> {{ form.Sorting_mode.label }} </td>
+            <td> {{ form.Sorting_mode }} </td>
         </tr>
     {% endfor %}
 
@@ -47,8 +47,10 @@
     </tr>
 
     <tr>
-        <td> {{ smiles_form.notes.label }} </td>
-        <td colspan="5"> {{ smiles_form.notes }} </td>
+        <!-- <td> {{ smiles_form.notes.label }} </td> -->
+        <td> {{ smiles_form.Q_notes.label }} </td>
+        <!-- <td colspan="5"> {{ smiles_form.notes }} </td> -->
+        <td colspan="5"> {{ smiles_form.Q_notes }} </td>
     </tr>
 
     <tr>
@@ -62,7 +64,8 @@
 <!-- Script: SMILES String Canvas Draw -->
 <script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
 <script>
-    let input = document.getElementById("id_smiles_string");
+    // let input = document.getElementById("id_smiles_string");
+    let input = document.getElementById("id_Q_smiles");
     let options = {
         "width": 250,
         "height": 250,
@@ -91,7 +94,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     function isNum(val) {
-        // Look into this. Might break.
+        // TODO Look into this. Might break.
         return !isNaN(val);
     }
 
@@ -101,7 +104,8 @@
         console.log("check if input is number - " + isNum(searchQuery));
 
         // checking if the input is a number or a range
-        const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-sorting_mode');
+        // const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-sorting_mode');
+        const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-Sorting_mode');
         if ((searchQuery == "") | (!isNum(searchQuery))) {
             sorting_mode_elem.removeAttribute('disabled');
         }
@@ -109,15 +113,6 @@
             sorting_mode_elem.value = 2;
             sorting_mode_elem.setAttribute('disabled', '');
         }
-
-        // TODO: Make sure that first number is smaller than second number
-        // sq_minmax = searchQuery.split("-");
-        // console.log(sq_minmax);
-        // sq_minval = Number(sq_minmax[0])
-        // sq_maxval = Number(sq_minmax[1])
-        // if (sq_minval > sq_maxval){
-        //     alert("Invalid range!!");
-        // }
     }
 
     var total = $('#id_form-TOTAL_FORMS').val();
@@ -136,8 +131,17 @@
         newElement.find(':input').each(function () {
             var name = $(this).attr('name').replace('-' + (total - 1) + '-', '-' + total + '-');
             var id = 'id_' + name;
-            $(this).attr({ 'name': name, 'id': id }).val('').removeAttr('checked');
-            $(this).attr({ 'name': name, 'id': id }).val('').removeAttr('disabled');
+            
+            if (name.indexOf("Property_name") >= 0){
+                var elem_value = 0
+            } else if (name.indexOf("Sorting_mode") >= 0) {
+                var elem_value = 2
+            } else {
+                var elem_value = ''
+            }
+
+            $(this).attr({ 'name': name, 'id': id }).val(elem_value).removeAttr('checked');
+            $(this).attr({ 'name': name, 'id': id }).val(elem_value).removeAttr('disabled');
         });
 
         newElement.find('label').each(function () {

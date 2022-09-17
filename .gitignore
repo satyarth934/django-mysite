@@ -663,5 +663,6 @@ retrotide-master
 retrotide-master.zip
 form_test_myview.html
 form_test_view.html
-search_IGNORE.html
-
+*.ipynb
+*IGNORE*
+*migrations*

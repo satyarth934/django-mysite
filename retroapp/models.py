@@ -21,36 +21,38 @@ class QueryPropertyDB(models.Model):
         'QueryDB',
         on_delete=models.CASCADE,
     )
-    Property_name = models.CharField(
-        max_length=200, 
+    Property_name = models.IntegerField(
+        # max_length=200, 
         choices=enumerate(constants.MOLECULE_PROPERTIES.keys()),
         default=list(constants.MOLECULE_PROPERTIES.keys()).index('Cetane Number'),
     )
-    Target_value = models.FloatField()
-    Min_val = models.FloatField()
-    Max_val = models.FloatField()
-    Sorting_mode = models.CharField(
-        max_length=200, 
-        choices=enumerate(constants.SORTING_OPTIONS),
-        default=constants.SORTING_OPTIONS.index(constants.DESCENDING),
+    Target_value = models.FloatField(blank=True, null=True)
+    Min_value = models.FloatField(blank=True, null=True)
+    Max_value = models.FloatField(blank=True, null=True)
+    Sorting_mode = models.IntegerField(
+        # max_length=200, 
+        # choices=enumerate(constants.SORTING_OPTIONS),
+        choices=constants.SORTING_OPTIONS,
+        # default=constants.SORTING_OPTIONS.index(constants.DESCENDING),
+        default=constants.NO_SORT,
+        blank=True,
+        null=True,
     )
 
 # TODO
-# class QueryResultsDB(models.Model):
-#     Q_uuid = models.ForeignKey(
-#         'QueryDB',
-#         on_delete=models.CASCADE,
-#     )
-#     # ResultBlob    # Expand the table with multiple Q_uuid
-#     SMILES_string = models.CharField(max_length=2000)
-#     Retrotide_Similarity_SCORE = models.FloatField()
-#     Design = models.CharField(max_length=2000)
-#     Cetane_number = models.FloatField()
-#     Research_octane_number = models.FloatField()
-#     Melting_point = models.FloatField()
-#     Flash_point = models.FloatField()
-#     Yield_sooting_index = models.FloatField()
-#     H1_receptor_pKd = models.FloatField()
-#     M2_receptor_pKd = models.FloatField()
-
-    
+class QueryResultsDB(models.Model):
+    Q_uuid = models.ForeignKey(
+        'QueryDB',
+        on_delete=models.CASCADE,
+    )
+    # ResultBlob    # Expand the table with multiple Q_uuid
+    SMILES = models.CharField(max_length=2000)
+    Retrotide_Similarity_SCORE = models.FloatField(blank=True, null=True)
+    DESIGN = models.CharField(max_length=2000, blank=True, null=True)
+    Cetane_number = models.FloatField(blank=True, null=True)
+    Research_octane_number = models.FloatField(blank=True, null=True)
+    Melting_point = models.FloatField(blank=True, null=True)
+    Flash_point = models.FloatField(blank=True, null=True)
+    Yield_sooting_index = models.FloatField(blank=True, null=True)
+    H1_receptor_pKd = models.FloatField(blank=True, null=True)
+    M2_receptor_pKd = models.FloatField(blank=True, null=True)
