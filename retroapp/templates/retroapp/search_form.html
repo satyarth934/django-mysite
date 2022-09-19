@@ -164,3 +164,18 @@
     });
 
 </script>
+
+<!-- RESET form -->
+<script type="text/javascript">
+    $(function () {
+        $("#id_reset").click(function (event) {
+            $.ajax({
+                type: "GET",
+                url: 'search',
+                success: function (response) {
+                    location.reload(true);
+                }
+            });
+        });
+    })
+</script>

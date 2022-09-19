@@ -24,7 +24,7 @@
             </tr>
         </table>
 
-        <form action="" method="post" target="resultsFrame">
+        <form action="" method="post" target="resultsFrame" id="id_form">
             {% csrf_token %}
             {{ property_formset.management_form }}
             {% include 'retroapp/search_form.html' with form=form %}
