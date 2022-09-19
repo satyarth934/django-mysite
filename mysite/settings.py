@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     'molinv.molinv.development.svc.spin.nersc.org',
+    'biomoleculararchitect.lbl.gov/',    # TODO: Add certificate to use https protocol.
 ]
 
 
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
+    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
