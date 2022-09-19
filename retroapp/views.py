@@ -220,7 +220,7 @@ def pks_search_result(request):
         retro_df = retro_df.sort_values(
             by=sorting_cols, 
             ascending=sorting_cols_asc, 
-            key=sorting_key
+            key=sorting_key,
         )
 
         # To reset the index value to start from 0 again
@@ -231,29 +231,28 @@ def pks_search_result(request):
         # with utils.ExecTimeCM("pd map") as map_et:
         retro_df['SMILES'] = retro_df['SMILES'].map(clean_sulfur_from_smiles_string)
         
-        # Write results to DB
-        print("--- retro_df ---")
-        print(retro_df.columns)
-        print("--- xxxxxxxx ---")
+        # Write results to QueryResultsDB
         retro_df_dict = retro_df.to_dict('records')
 
-        # TODO: this is currently breaking!!!
-        model_instances = [QueryResultsDB(
-            Q_uuid_id=QueryDB.objects.last(),
-            SMILES=record['SMILES'],
-            Retrotide_Similarity_SCORE=record['Retrotide_Similarity_SCORE'],
-            DESIGN=record['DESIGN'],
-            Cetane_number=None if 'Cetane_number' not in record else record['Cetane_number'],
-            Research_octane_number=None if 'Research_octane_number' not in record else record['Research_octane_number'],
-            Melting_point=None if 'Melting_point' not in record else record['Melting_point'],
-            Flash_point=None if 'Flash_point' not in record else record['Flash_point'],
-            Yield_sooting_index=None if 'Yield_sooting_index' not in record else record['Yield_sooting_index'],
-            H1_receptor_pKd=None if 'H1_receptor_pKd' not in record else record['H1_receptor_pKd'],
-            M2_receptor_pKd=None if 'M2_receptor_pKd' not in record else record['M2_receptor_pKd'],
-        ) for record in retro_df_dict]
+        model_instances = [
+            QueryResultsDB(
+                Q_uuid_id=QueryDB.objects.last().Q_uuid,
+                SMILES=record['SMILES'],
+                Retrotide_Similarity_SCORE=record['Retrotide_Similarity_SCORE'],
+                DESIGN=record['DESIGN'],
+                Cetane_number=record.get('Cetane Number', None),
+                Research_octane_number=record.get('Research Octane Number', None),
+                Melting_point=record.get('Melting Point', None),
+                Flash_point=record.get('Flash Point', None),
+                Yield_sooting_index=record.get('Yield Sooting Index', None),
+                H1_receptor_pKd=record.get('H1 Receptor pKd', None),
+                M2_receptor_pKd=record.get('M2 Receptor pKd', None),
+            ) for record in retro_df_dict
+        ]
 
         QueryResultsDB.objects.bulk_create(model_instances)
 
+        # Render return webpage
         context = {
             "query_dict": search_query,
             "keys": ["Rendered Molecule", *retro_df.keys()],

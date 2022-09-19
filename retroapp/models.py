@@ -6,12 +6,11 @@ from django.db import models
 # Create your models here.
 class QueryDB(models.Model):
     Q_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    Timestamp = models.DateTimeField(auto_now_add=True)
     Username = models.CharField(max_length=100)
     Full_name = models.CharField(max_length=100)
     Email = models.CharField(max_length=100)
-    # Q_smiles = models.TextField(max_length=2000)
     Q_smiles = models.CharField(max_length=2000)
-    # Q_notes = models.TextField()
     Q_notes = models.CharField(max_length=2000, blank=True)
     Job_id = models.CharField(max_length=200)
 
@@ -39,7 +38,7 @@ class QueryPropertyDB(models.Model):
         null=True,
     )
 
-# TODO
+
 class QueryResultsDB(models.Model):
     Q_uuid = models.ForeignKey(
         'QueryDB',
