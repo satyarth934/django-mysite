@@ -21,7 +21,6 @@ class QueryPropertyDB(models.Model):
         on_delete=models.CASCADE,
     )
     Property_name = models.IntegerField(
-        # max_length=200, 
         choices=enumerate(constants.MOLECULE_PROPERTIES.keys()),
         default=list(constants.MOLECULE_PROPERTIES.keys()).index('Cetane Number'),
     )
@@ -29,10 +28,7 @@ class QueryPropertyDB(models.Model):
     Min_value = models.FloatField(blank=True, null=True)
     Max_value = models.FloatField(blank=True, null=True)
     Sorting_mode = models.IntegerField(
-        # max_length=200, 
-        # choices=enumerate(constants.SORTING_OPTIONS),
         choices=constants.SORTING_OPTIONS,
-        # default=constants.SORTING_OPTIONS.index(constants.DESCENDING),
         default=constants.NO_SORT,
         blank=True,
         null=True,
