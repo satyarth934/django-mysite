@@ -666,3 +666,4 @@ form_test_view.html
 *.ipynb
 *IGNORE*
 *migrations*
+*mysql_config*.yaml
