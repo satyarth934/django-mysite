@@ -53,8 +53,11 @@ RUN cd /root/retrotide && \
     pip3 install . && \
     cd /root
 
+# Adding MySQL config file to the container
+ADD ./mysql_config_spin.yaml /root/mysql_config.yaml
+
 # Clone Website code
 RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
 WORKDIR /root/django-mysite
 
-# CMD python3 manage.py runserver 0.0.0.0:8000
+# CMD python3 manage.py makemigrations; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000
