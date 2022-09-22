@@ -1,0 +1,76 @@
+<html>
+    {% include "retroapp/header.html" %}
+
+    {% load socialaccount %}
+    {% load domainFilters %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/history.css' %}">
+
+    <body>
+        <table cellspacing="10">
+            {% if not user.is_authenticated %}
+                <tr>
+                    <td>Please login to view your past queries!!</td>
+                </tr>
+                <tr>
+                    <td>
+                        <button>
+                            <a href="/retroapp/home">
+                                Login
+                            </a>
+                        </button>
+                    </td>
+                </tr>
+
+            {% else %}
+                <tr>
+                    <td colspan="100" style="text-align: left;">
+                        Hello {{ user }} ...
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="100" style="text-align: center;">
+                        Query History
+                    </th>
+                </tr>
+
+
+                <tr>
+                    <th>SNo</th>
+                    <!-- <th>Q_uuid</th> -->
+                    <th>Timestamp</th>
+                    <th>SMILES</th>
+                    <th>Notes</th>
+                    <th>Property</th>
+                    <th>Target Value</th>
+                    <th>Min Value</th>
+                    <th>Max Value</th>
+                    <th>Sorting Mode</th>
+                </tr>
+
+                {% for query in query_object_list %}
+                    {% for query_prop in query.1 %}
+                        <tr>
+                            {% if forloop.counter == 1 %}
+                                <td rowspan="{{ query.1.count }}">{{ forloop.parentloop.counter }}</td>
+                                <!-- <td rowspan="{{ query.1.count }}">{{ query.0.Q_uuid }}</td> -->
+                                <td rowspan="{{ query.1.count }}">{{ query.0.Timestamp }}</td>
+                                <td rowspan="{{ query.1.count }}">{{ query.0.Q_smiles }}</td>
+                                <td rowspan="{{ query.1.count }}">{{ query.0.Q_notes }}</td>
+                            {% endif %}
+        
+                            <td>{{ MOLECULE_PROPERTIES|index:query_prop.Property_name }}</td>
+                            <td>{{ query_prop.Target_value }}</td>
+                            <td>{{ query_prop.Min_value }}</td>
+                            <td>{{ query_prop.Max_value }}</td>
+                            <td>{{ SORTING_OPTIONS|index:query_prop.Sorting_mode }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+
+            {% endif %}
+            
+        </table>
+    </body>
+</html>

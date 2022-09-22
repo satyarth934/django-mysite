@@ -10,8 +10,12 @@ urlpatterns = [
     
     path('home', views.home, name='home'),
     path('search', views.search, name='search'),
-    # path('pks', views.pks, name='pks'),    # Not useful anymore    # DELETE
-    path('history', views.history, name='history'),
+    
+    # TODO: Use this to get results of previous queries from the database.
+    # path('pks', views.pks_search_result, name='pks_search_result'),
+    
+    # path('history', views.history, name='history'),
+    path('history', views.QueryHistoryView.as_view(), name='history'),
     path('about', views.about, name='about'),
     re_path(r'(\S+)/(\d{1,4})$', views.retrotide_usage, name='smilestr'),
     

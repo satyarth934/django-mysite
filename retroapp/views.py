@@ -1,15 +1,15 @@
 from collections import defaultdict
-from email import message
 from django.shortcuts import render, redirect
 
-from django.http import HttpResponse, JsonResponse
-from django.contrib import messages
+from django.http import HttpResponse
 
 from rdkit import Chem
 
 import pandas as pd
 from django.template import loader
-from django.forms import formset_factory, modelformset_factory
+from django.forms import formset_factory
+from django.views.generic.base import TemplateView
+
 from retroapp import constants
 from retroapp.constants import ASCENDING, DESCENDING, NO_SORT, MOLECULE_PROPERTIES, SORTING_OPTIONS
 
@@ -19,7 +19,6 @@ from mysite import utils
 import warnings
 warnings.formatwarning = utils.warning_format    # Defining a specific format to print warnings on console
 
-from datetime import datetime
 import numpy as np
 import logging
 logger = logging.getLogger(f"{__name__}")
@@ -41,13 +40,6 @@ def index(request):
 # View function for home URL
 @utils.log_function
 def home(request):
-
-    # DELETE: only for debugging purposes
-    if request.user.is_authenticated:
-        print("request.user:", request.user)
-        print("request.user.is_authenticated:", request.user.is_authenticated)
-        print("request.user.socialaccount_set.all()[0].get_avatar_url():", request.user.socialaccount_set.all()[0].get_avatar_url())
-
     template = loader.get_template("retroapp/home.html")
     context = {}
     rendered_str = template.render(context, request)
@@ -113,7 +105,7 @@ def search(request):
         if property_formset.is_valid():
             logger.info("[VALID] property_formset")
 
-            Q_uuid_fk = QueryDB.objects.last()
+            Q_uuid_fk = QueryDB.objects.latest('Timestamp')
 
             for i, form in enumerate(property_formset):
                 logger.info(f"---> FORM {i}")
@@ -138,6 +130,7 @@ def search(request):
         
         # return render(request, "formsetapp/index.html", {})
         if smiles_form.is_valid() and property_formset.is_valid():
+            request.session['_form_state'] = request.POST
             request.session['_search_query_smiles'] = smiles_form.cleaned_data
             request.session['_search_query_properties'] = [form.cleaned_data for form in property_formset]
             # return redirect('pks', permanent=False)
@@ -147,6 +140,7 @@ def search(request):
 # View function for search results in the same search page
 @utils.log_function
 def pks_search_result(request):
+    
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
         # search_query = request.session.get('_search_query')
@@ -161,8 +155,6 @@ def pks_search_result(request):
         logger.info(f"search_query = {search_query}")
 
         # Calling retrotide API
-        # mol_properties = [d["molecular_property"] for d in search_query["properties"]]
-        # mol_properties = [d["Property_name"] for d in search_query["properties"]]
         mol_properties = [
             list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
             for d in search_query["properties"]
@@ -171,8 +163,6 @@ def pks_search_result(request):
         
         # Update the dataframe based on min-max ranges of all properties.
         for search_query_property in search_query["properties"]:
-            # mol_property = search_query_property["molecular_property"]
-            # mol_property = search_query_property["Property_name"]
             mol_property = list(constants.MOLECULE_PROPERTIES.keys())[search_query_property["Property_name"]]
             min_val = constants.MOLECULE_PROPERTIES[mol_property]['min']
             max_val = constants.MOLECULE_PROPERTIES[mol_property]['max']
@@ -228,7 +218,6 @@ def pks_search_result(request):
 
         # TODO: map the sulfur replacement function here for all the molecules.
         # TODO: Find an alternate more efficient implementation. This will take around 5-7 minutes for a million rows.
-        # with utils.ExecTimeCM("pd map") as map_et:
         retro_df['SMILES'] = retro_df['SMILES'].map(clean_sulfur_from_smiles_string)
         
         # Write results to QueryResultsDB
@@ -266,29 +255,58 @@ def pks_search_result(request):
         return HttpResponse("404: No search query!")
 
 
-# Placeholder for the history page (contains list of user's all old query runs)
-@utils.log_function
-def history(request):
-    # TODO: Implement this view function
-    # messages.info(request, "Checking django msg.")
+# View for history page
+class QueryHistoryView(TemplateView):
+    template_name = "retroapp/history.html"
 
-    if request.user.is_authenticated:
-        # messages.info(request, "Your past queries...")
-        context = {
-            "message": "Your past queries...",
-            "message_tag": "INFO",
-        }
-        ...
+    @utils.log_function
+    def get_context_data(self, **kwargs):
+        # User IS NOT authenticated
+        if not self.request.user.is_authenticated:
+            context = {
+                "message": "Please login to view your past queries!!",
+                "message_tag": "ERROR",
+                # "remove_tabs": True,
+            }
+            return context
+
+        # User IS authenticated
+        context = super(QueryHistoryView, self).get_context_data(**kwargs)
+        context['MOLECULE_PROPERTIES'] = list(constants.MOLECULE_PROPERTIES.keys())
+        context['SORTING_OPTIONS'] = [s_optn[1] for s_optn in constants.SORTING_OPTIONS]
+
+        queries = QueryDB.objects.filter(Username=self.request.user).order_by('-Timestamp')
+
+        context['query_object_list'] = list()
+        for q in queries:
+            q_properties = QueryPropertyDB.objects.filter(Q_uuid=q.Q_uuid)
+            context['query_object_list'].append((q, q_properties))
+
+        return context
+
+
+# # Placeholder for the history page (contains list of user's all old query runs)
+# @utils.log_function
+# def history(request):
+#     if request.user.is_authenticated:
+#         # messages.info(request, "Your past queries...")
+#         context = {
+#             "message": "Your past queries...",
+#             "message_tag": "INFO",
+#         }
+#         ...
+#         return render(request, "retroapp/history.html", context)
+
+#         # return QueryHistoryView.as_view()
     
-    else:
-        # messages.error(request, "Please login to view your past queries!!")
-        context = {
-            "message": "Please login to view your past queries!!",
-            "message_tag": "ERROR",
-            # "remove_tabs": True,
-        }
-
-    return render(request, "retroapp/guest_landing_page.html", context)
+#     else:
+#         # messages.error(request, "Please login to view your past queries!!")
+#         context = {
+#             "message": "Please login to view your past queries!!",
+#             "message_tag": "ERROR",
+#             # "remove_tabs": True,
+#         }
+#         return render(request, "retroapp/guest_landing_page.html", context)
 
 
 # View function for about URL
@@ -306,7 +324,6 @@ def retrotide_usage(request, smiles, width=243):
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
     retro_df = retrotide_call(smiles=smiles)
-    print(retro_df)         # DELETE: only for debugging purposes
 
     context = {
         "query_dict": {"smiles_string": smiles},
@@ -344,15 +361,6 @@ def retrotide_call(smiles, properties=None):
         df_dict["DESIGN"].append(designs[-1][i][0].modules)
         for property in properties:
             df_dict[property].append(predict_property_api(property=property))
-
-    # DELETE
-    # print("--- properties ---")
-    # print(properties)
-    # print("--- df_dict ---")
-    # for k in df_dict:
-    #     print(k)
-    #     print(len(df_dict[k]))
-    # print("--- xxxxxxx ---")
 
     try:
         output_df = pd.DataFrame(df_dict)
