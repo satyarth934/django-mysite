@@ -219,7 +219,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Login site redirect
-SITE_ID = 0
+# SITE_ID = 2 is what works for SPIN NERSC.
+SITE_ID = 2
 
 LOGIN_REDIRECT_URL = '/retroapp'
 LOGOUT_REDIRECT_URL = '/retroapp'
