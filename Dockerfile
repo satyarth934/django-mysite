@@ -55,8 +55,7 @@ RUN cd /root/retrotide && \
     cd /root
 
 # Clone Website code
-# RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
-RUN git clone -b db-integration https://github.com/satyarth934/django-mysite.git
+RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
 
 # Adding MySQL config file to the container
 ADD ./mysql_config_spin.yaml /root/django-mysite/mysql_config.yaml
