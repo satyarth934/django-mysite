@@ -102,7 +102,7 @@ class FormQueryProperty(forms.ModelForm):
         else:
             mode = int(self.cleaned_data['Sorting_mode'])    # choice actual value
         
-        print(f"Sorting {mode = }")
+        print(f"Sorting mode = {mode}")
 
         return mode
     
