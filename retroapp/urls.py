@@ -16,6 +16,7 @@ urlpatterns = [
     
     # path('history', views.history, name='history'),
     path('history', views.QueryHistoryView.as_view(), name='history'),
+    path('oldresult', views.QueryHistoryResultView.as_view(), name='history_results'),
     path('about', views.about, name='about'),
     re_path(r'(\S+)/(\d{1,4})$', views.retrotide_usage, name='smilestr'),
     

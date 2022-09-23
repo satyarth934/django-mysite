@@ -1,0 +1,66 @@
+<html>
+    {% load socialaccount %}
+    {% load domainFilters %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/history.css' %}">
+    
+    {% if not user.is_authenticated %}
+        {% include "retroapp/guest_landing_page.html" %}
+    
+    {% else %}
+        {% include "retroapp/header.html" %}
+        
+        <body>
+            <table cellspacing="10">
+                
+                <tr>
+                    <td colspan="100" style="text-align: left;">
+                        Hello {{ user }} ...
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="100" style="text-align: center;">
+                        Query History Result
+                    </th>
+                </tr>
+
+                <tr>
+                    <th>SNo</th>
+                    <th>SMILES</th>
+                    <th>Retrotide_Similarity_SCORE</th>
+                    <th>DESIGN</th>
+                    <th>Cetane_number</th>
+                    <th>Research_octane_number Value</th>
+                    <th>Melting_point Value</th>
+                    <th>Flash_point Value</th>
+                    <th>Yield_sooting_index Mode</th>
+                    <th>H1_receptor_pKd Mode</th>
+                    <th>M2_receptor_pKd Mode</th>
+                </tr>
+                
+                {% for query in query_res_object %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ query.SMILES }}</td>
+                        <td>{{ query.Retrotide_Similarity_SCORE }}</td>
+                        <td>
+                            <div title="{{ query.DESIGN }}">
+                                Hover here to see the full data
+                            </div>
+                        </td>
+                    
+                        <td>{{ query.Cetane_number }}</td>
+                        <td>{{ query.Research_octane_number }}</td>
+                        <td>{{ query.Melting_point }}</td>
+                        <td>{{ query.Flash_point }}</td>
+                        <td>{{ query.Yield_sooting_index }}</td>
+                        <td>{{ query.H1_receptor_pKd }}</td>
+                        <td>{{ query.M2_receptor_pKd }}</td>
+                    </tr>
+                {% endfor %}
+
+            </table>
+        </body>
+    {% endif %}
+</html>

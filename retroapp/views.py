@@ -223,9 +223,11 @@ def pks_search_result(request):
         # Write results to QueryResultsDB
         retro_df_dict = retro_df.to_dict('records')
 
+        Q_uuid_fk = QueryDB.objects.latest('Timestamp')
+
         model_instances = [
             QueryResultsDB(
-                Q_uuid_id=QueryDB.objects.last().Q_uuid,
+                Q_uuid_id=Q_uuid_fk.Q_uuid,
                 SMILES=record['SMILES'],
                 Retrotide_Similarity_SCORE=record['Retrotide_Similarity_SCORE'],
                 DESIGN=record['DESIGN'],
@@ -307,6 +309,30 @@ class QueryHistoryView(TemplateView):
 #             # "remove_tabs": True,
 #         }
 #         return render(request, "retroapp/guest_landing_page.html", context)
+
+
+# View for history results page
+class QueryHistoryResultView(TemplateView):
+    template_name = "retroapp/history_result.html"
+
+    @utils.log_function
+    def get_context_data(self, **kwargs):
+        # User IS NOT authenticated
+        if not self.request.user.is_authenticated:
+            context = {
+                "message": "Please login to view your past queries!!",
+                "message_tag": "ERROR",
+                # "remove_tabs": True,
+            }
+            return context
+
+        # User IS authenticated
+        context = super(QueryHistoryResultView, self).get_context_data(**kwargs)
+
+        query_res_object = QueryResultsDB.objects.filter(Q_uuid_id=self.request.GET['name'])
+        context["query_res_object"] = query_res_object
+
+        return context
 
 
 # View function for about URL

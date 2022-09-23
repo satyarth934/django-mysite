@@ -46,7 +46,11 @@
                                 <td rowspan="{{ query.1.count }}">{{ forloop.parentloop.counter }}</td>
                                 <!-- <td rowspan="{{ query.1.count }}">{{ query.0.Q_uuid }}</td> -->
                                 <td rowspan="{{ query.1.count }}">{{ query.0.Timestamp }}</td>
-                                <td rowspan="{{ query.1.count }}">{{ query.0.Q_smiles }}</td>
+                                <td rowspan="{{ query.1.count }}">
+                                    <a href="/retroapp/oldresult?name={{ query.0.Q_uuid }}">
+                                        {{ query.0.Q_smiles }}
+                                    </a>
+                                </td>
                                 <td rowspan="{{ query.1.count }}">{{ query.0.Q_notes }}</td>
                             {% endif %}
         
