@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     'molinv.molinv.development.svc.spin.nersc.org',
-    'biomoleculararchitect.lbl.gov/',    # TODO: Add certificate to use https protocol.
+    'biomoleculararchitect.lbl.gov',    # TODO: Add certificate to use https protocol.
 ]
 
 
