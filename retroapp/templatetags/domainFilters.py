@@ -73,6 +73,18 @@ def islist(value):
 
 @register.filter
 def index(indexable, i):
+    """Get value at index 'i' in 'indexable' iterable.
+
+    Args:
+        indexable (Iterable): Iterable to get the inde value from.
+        i (int): Index position.
+
+    Returns:
+        Object: Value at index 'i'.
+
+    Example usage:
+        {{ iterable|index:i }}
+    """
     if i >= len(indexable):
         return f"ERROR: Index out of range. index={i}; len(list)={len(indexable)}"
     return indexable[i]

@@ -31,12 +31,28 @@ MOLECULE_PROPERTIES = {
     },
 }
 
-NO_SORT = "No sorting"
-ASCENDING = "Lower is better"
-DESCENDING = "Higher is better"
+# NO_SORT = "No sorting"
+# ASCENDING = "Lower is better"
+# DESCENDING = "Higher is better"
+
+# SORTING_OPTIONS = [
+#     ASCENDING,
+#     DESCENDING,
+#     NO_SORT,
+# ]
+
+ASCENDING = 0
+DESCENDING = 1
+NO_SORT = 2
 
 SORTING_OPTIONS = [
-    ASCENDING,
-    DESCENDING,
-    NO_SORT,
+    (ASCENDING, "Lower is better"),
+    (DESCENDING, "Higher is better"),
+    (NO_SORT, "No sorting"),
 ]
+
+# SORTING_OPTIONS_DB = (
+#     ("ASC", ASCENDING),
+#     ("DESC", DESCENDING),
+#     ("NOSO", NO_SORT),
+# )

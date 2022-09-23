@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import yaml
 from pathlib import Path
+import pymysql 
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +33,7 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     'molinv.molinv.development.svc.spin.nersc.org',
+    'biomoleculararchitect.lbl.gov',    # TODO: Add certificate to use https protocol.
 ]
 
 
@@ -43,12 +46,17 @@ INSTALLED_APPS = [
     'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
+    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'widget_tweaks',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -84,11 +92,23 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
+db_config_file = "mysql_config.yaml"
+db_config = yaml.safe_load(open(db_config_file, "r"))
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': db_config['DBNAME'],
+        'USER': db_config['USER'],
+        'PASSWORD': db_config['PASSWORD'],
+        'HOST': db_config['HOST'],
+        'PORT': db_config['PORT'],
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+         }   
     }
 }
 
@@ -140,6 +160,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 X_FRAME_OPTIONS = 'ALLOWALL'
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
+# LOGGING
 import os
 logs_path = 'logs/debug.log'
 os.makedirs(os.path.dirname(logs_path), exist_ok=True)
@@ -160,17 +181,46 @@ LOGGING = {
             'filename': logs_path,
         },
 
-        # 'console': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.StreamHandler',
-        #     'formatter': 'default',
-        # }
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        }
     },
     'loggers': {
         '': {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
+            # 'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': False,
         }
     },
 }
+# import logging
+# logging.disable(logging.CRITICAL)
+
+
+# Google OAuth Authentication
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
+# Login site redirect
+# SITE_ID = 2 is what works for SPIN NERSC.
+SITE_ID = 2
+
+LOGIN_REDIRECT_URL = '/retroapp'
+LOGOUT_REDIRECT_URL = '/retroapp'

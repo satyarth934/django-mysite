@@ -1,0 +1,57 @@
+{% load socialaccount %}
+
+<!-- user: {{ user }} <br> -->
+<!-- user.email: {{ user.email }} <br> -->
+<!-- user.is_authenticated: {{ user.is_authenticated }} <br> -->
+<!-- user.socialaccount_set.all.0.get_avatar_url: {{ user.socialaccount_set.all.0.get_avatar_url }} <br> -->
+<!-- user.socialaccount_set.all.0.uid: {{ user.socialaccount_set.all.0.uid }} <br> -->
+<!-- user.socialaccount_set.all.0.date_joined: {{ user.socialaccount_set.all.0.date_joined }} <br> -->
+<!-- user.socialaccount_set.all.0.last_login: {{ user.socialaccount_set.all.0.last_login }} <br> -->
+<!-- user.socialaccount_set.all.0.extra_data.name: {{ user.socialaccount_set.all.0.extra_data.name }} <br> -->
+<!-- user.socialaccount_set.all.0.extra_data: {{ user.socialaccount_set.all.0.extra_data }} <br> -->
+
+<table class="loginTable" cellspacing="10">
+    {% if user.is_authenticated %}
+        <tr>
+            <td>
+                Welcome, You are logged in as {{ user.username }}
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <button>
+                    <a href="/retroapp/logout">
+                        Logout
+                    </a>
+                </button>
+            </td>
+        </tr>
+    
+    {% else %}
+        <tr>
+            <td>
+                Welcome, user!
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <button>
+                    <a href="{% provider_login_url 'google' %}">
+                        Login With Google
+                    </a>
+                </button>
+            </td>
+        </tr>
+    {% endif %}
+</table>
+
+<!-- <h1>My Google OAuth Project </h1> -->
+<!--  -->
+<!-- {% if user.is_authenticated %} -->
+    <!-- <p>Welcome, You are logged in as {{ user.username }}</p> -->
+    <!-- <button><a href="/retroapp/logout">Logout</a></button> -->
+<!--  -->
+<!-- {% else %} -->
+    <!-- <a href="{% provider_login_url 'google' %}">Login With Google</a> -->
+<!--  -->
+<!-- {% endif %} -->
