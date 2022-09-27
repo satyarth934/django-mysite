@@ -94,14 +94,14 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     function isNum(val) {
-        // TODO Look into this. Might break.
-        return !isNaN(val);
+        // SL - replaced this with the correct jquery check
+        return isNumeric(val);
     }
 
     function validate() {
         var total_forms = $('#id_form-TOTAL_FORMS').val();
         var searchQuery = $("#id_form-" + (total_forms-1) + "-property_value_range").val();
-        console.log("check if input is number - " + isNum(searchQuery));
+        // console.log("check if input is number - " + isNum(searchQuery));
 
         // checking if the input is a number or a range
         // const sorting_mode_elem = document.getElementById('id_form-' + (total_forms-1) + '-sorting_mode');
