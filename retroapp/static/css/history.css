@@ -23,14 +23,19 @@ table {
     margin-right: auto;
     margin-top: 1%;
     width: 100%;
+     color:  #333;
+    border:  2px solid #333;
+    box-sizing:  border-box;
 }
 
 th {
-    border-bottom: 2px solid #333;
-    color: #333;
-    font-weight: bold;
-    text-align: center;
-    padding: 15px;
+  border-bottom:  2px solid #333;
+  background-color:  #95cdb3;
+  color: #333;
+  font-weight:  bold;
+  text-align:  center;
+  padding:  15px;
+  box-sizing:  border-box;
 }
 
 tr {}
