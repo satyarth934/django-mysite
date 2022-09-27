@@ -41,7 +41,9 @@ def urlq(str):
 
 @register.filter
 def sigfig(inputFloat):
-    return '%s' % float('%.3g' % inputFloat)
+    if isinstance(inputFloat, float):
+        return '%s' % float('%.3g' % inputFloat)
+    return inputFloat
 
 
 @register.filter
