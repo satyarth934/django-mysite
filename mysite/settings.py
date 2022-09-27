@@ -21,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# TODO: SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-x%7f4w%1en)85*1%!*68uzuik5wka%-2=gb7)@icjdr!fd1m%4'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# TODO: SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 # ALLOWED_HOSTS = []
@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     'molinv.molinv.development.svc.spin.nersc.org',
-    'biomoleculararchitect.lbl.gov',    # TODO: Add certificate to use https protocol.
+    'biomoleculararchitect.lbl.gov',
 ]
 
 
@@ -41,8 +41,8 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'dfshow.apps.DfshowConfig',
-    'polls.apps.PollsConfig',
+    'dfshow.apps.DfshowConfig',    # TODO: DELETE
+    'polls.apps.PollsConfig',    # TODO: DELETE
     'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
@@ -220,7 +220,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Login site redirect
 # SITE_ID = 2 is what works for SPIN NERSC.
-SITE_ID = 2
+SITE_ID = 0
 
 LOGIN_REDIRECT_URL = '/retroapp'
 LOGOUT_REDIRECT_URL = '/retroapp'
