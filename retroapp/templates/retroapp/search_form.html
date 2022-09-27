@@ -48,9 +48,9 @@
 
     <tr>
         <!-- <td> {{ smiles_form.notes.label }} </td> -->
-        <td> {{ smiles_form.Q_notes.label }} </td>
+        <td id="comment_label"> {{ smiles_form.Q_notes.label }} </td>
         <!-- <td colspan="5"> {{ smiles_form.notes }} </td> -->
-        <td colspan="5"> {{ smiles_form.Q_notes }} </td>
+        <td id="comment_entry" style="display: none;" colspan="5"> {{ smiles_form.Q_notes }} </td>
     </tr>
 
     <tr>
@@ -60,6 +60,14 @@
     </tr>
 </table>
 
+<!-- example of toggling the comment field - we may want to change the label to say "add comment" 
+     and potentially make it a <button> tag, icon, or something obviously clickable -->
+<script type="text/javascript">
+    $("#comment_label").click(
+        function() {
+            $("#comment_entry").toggle();
+        });
+</script>
 
 <!-- Script: SMILES String Canvas Draw -->
 <script src="https://unpkg.com/smiles-drawer@1.0.10/dist/smiles-drawer.min.js"></script>
