@@ -12,7 +12,9 @@ class QueryDB(models.Model):
     Email = models.CharField(max_length=100)
     Q_smiles = models.CharField(max_length=2000)
     Q_notes = models.CharField(max_length=2000, blank=True)
-    Job_id = models.CharField(max_length=200)
+    # Job_id = models.CharField(max_length=200)
+    # STATUS = models.CharField(max_length=200)    # Choice: SUCCESS | FAILED | SUBMITTED
+
 
 
 class QueryPropertyDB(models.Model):
