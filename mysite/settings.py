@@ -189,8 +189,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            # 'handlers': ['console', 'file'],
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
+            # 'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': False,
         }

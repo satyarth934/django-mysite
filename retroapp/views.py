@@ -2,7 +2,6 @@ from collections import defaultdict
 from django.shortcuts import render, redirect
 
 from django.http import HttpResponse
-
 from rdkit import Chem
 
 import pandas as pd
@@ -358,6 +357,7 @@ def retrotide_usage(request, smiles, width=243):
         "width": width,
     }
     return render(request, "retroapp/showtable.html", context)
+
 
 ########################
 # Dependency functions #
