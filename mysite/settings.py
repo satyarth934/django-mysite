@@ -242,8 +242,11 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Login site redirect
-# SITE_ID = 2 is what works for SPIN NERSC.
-SITE_ID = 0
+if os.environ.get('DJANGO_SITE_ID') is None:
+    SITE_ID = 0
+else:
+    # SITE_ID = 2 is what works for SPIN NERSC.
+    SITE_ID = int(os.environ.get('DJANGO_SITE_ID'))    
 
 LOGIN_REDIRECT_URL = '/retroapp'
 LOGOUT_REDIRECT_URL = '/retroapp'
