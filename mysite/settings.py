@@ -41,7 +41,6 @@ ALLOWED_HOSTS = [
     'molinv.molinv.development.svc.spin.nersc.org',
     '127.0.0.1', 
     'localhost', 
-    '10.0.0.159',    # TODO: DELETE 
 ]
 
 
@@ -49,8 +48,6 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'dfshow.apps.DfshowConfig',    # TODO: DELETE
-    'polls.apps.PollsConfig',    # TODO: DELETE
     'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
@@ -117,7 +114,6 @@ else:
         HOST=os.environ.get('MYSQL_HOST'),
         PORT=os.environ.get('MYSQL_PORT'),
     )
-logging.critical(f"Logging to MySQL using these details: {db_config}")    # TODO: DELETE
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
