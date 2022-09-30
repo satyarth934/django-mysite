@@ -13,11 +13,12 @@ class QueryDB(models.Model):
     Q_smiles = models.CharField(max_length=2000)
     Q_notes = models.CharField(max_length=2000, blank=True)
     Q_Job_id = models.CharField(max_length=200)
-    Q_Status = models.CharField(max_length=50, blank=True)    # Choices: SUCCESS | FAILED | SUBMITTED - to be pulled form slurm status API.
+    Q_Status = models.CharField(max_length=50, blank=True)    # Choices: SUCCESS | FAILED | SUBMITTED - to be pulled from slurm status API.
 
 
 
 class QueryPropertyDB(models.Model):
+    id = models.BigAutoField(primary_key=True)
     Q_uuid = models.ForeignKey(
         'QueryDB',
         on_delete=models.CASCADE,
@@ -38,6 +39,7 @@ class QueryPropertyDB(models.Model):
 
 
 class QueryResultsDB(models.Model):
+    id = models.BigAutoField(primary_key=True)
     Q_uuid = models.ForeignKey(
         'QueryDB',
         on_delete=models.CASCADE,
