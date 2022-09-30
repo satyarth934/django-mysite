@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+import os
 import yaml
 from pathlib import Path
 import pymysql 
@@ -22,18 +23,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # TODO: SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x%7f4w%1en)85*1%!*68uzuik5wka%-2=gb7)@icjdr!fd1m%4'
+# SECRET_KEY = ''
+SECRET_KEY_FILE = 'django_secret_key' if os.path.exists('django_secret_key') else os.environ.get('DJANGO_SECRET_KEY_FILE')
+with open(SECRET_KEY_FILE, 'r') as dsk_fh:
+    SECRET_KEY = dsk_fh.read()
 
 # TODO: SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DEBUG_MODE') is None:
+    DEBUG = True
+else:
+    DEBUG = (os.environ.get('DEBUG_MODE') == "True")    # This environment variable is defined in the Spin container
+
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
-    '10.0.0.159', 
-    'localhost', 
-    '127.0.0.1', 
-    'molinv.molinv.development.svc.spin.nersc.org',
     'biomoleculararchitect.lbl.gov',
+    'molinv.molinv.development.svc.spin.nersc.org',
+    '127.0.0.1', 
+    'localhost', 
+    '10.0.0.159',    # TODO: DELETE 
 ]
 
 
@@ -92,8 +100,22 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+# TODO: Add this to SPIN Secrets
 db_config_file = "mysql_config.yaml"
-db_config = yaml.safe_load(open(db_config_file, "r"))
+if os.path.exists(db_config_file):
+    with open(db_config_file, "r") as dbconf_fh:
+        db_config = yaml.safe_load(dbconf_fh)
+else:
+    with open(os.environ.get('MYSQL_PASSWORD_FILE'), 'r') as mysql_pass_fh:
+        mysql_password = mysql_pass_fh.read()
+    
+    db_config = dict(
+        DBNAME=os.environ.get('MYSQL_DATABASE'),
+        USER=os.environ.get('MYSQL_USER'),
+        PASSWORD=mysql_password,
+        HOST=os.environ.get('MYSQL_HOST'),
+        PORT=os.environ.get('MYSQL_PORT'),
+    )
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
