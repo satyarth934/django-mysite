@@ -667,3 +667,4 @@ form_test_view.html
 *IGNORE*
 *migrations*
 *mysql_config*.yaml
+django_secret_key
