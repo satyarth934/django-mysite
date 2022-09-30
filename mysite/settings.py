@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
 import yaml
+import logging
 from pathlib import Path
 import pymysql 
 pymysql.install_as_MySQLdb()
@@ -22,13 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# TODO: SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = ''
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY_FILE = 'django_secret_key' if os.path.exists('django_secret_key') else os.environ.get('DJANGO_SECRET_KEY_FILE')
 with open(SECRET_KEY_FILE, 'r') as dsk_fh:
     SECRET_KEY = dsk_fh.read()
 
-# TODO: SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get('DEBUG_MODE') is None:
     DEBUG = True
 else:
@@ -100,12 +100,13 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-# TODO: Add this to SPIN Secrets
 db_config_file = "mysql_config.yaml"
 if os.path.exists(db_config_file):
+    logging.info(f"Logging to MySQL using {mysql_config.yaml} file.")
     with open(db_config_file, "r") as dbconf_fh:
         db_config = yaml.safe_load(dbconf_fh)
 else:
+    logging.info(f"Logging to MySQL using 'MYSQL_PASSWORD_FILE' environment variable.")
     with open(os.environ.get('MYSQL_PASSWORD_FILE'), 'r') as mysql_pass_fh:
         mysql_password = mysql_pass_fh.read()
     
@@ -116,6 +117,7 @@ else:
         HOST=os.environ.get('MYSQL_HOST'),
         PORT=os.environ.get('MYSQL_PORT'),
     )
+logging.critical(f"Logging to MySQL using these details: {db_config}")    # TODO: DELETE
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
@@ -183,7 +185,6 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
 # LOGGING
-import os
 logs_path = 'logs/debug.log'
 os.makedirs(os.path.dirname(logs_path), exist_ok=True)
 LOGGING = {
