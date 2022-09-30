@@ -11,7 +11,6 @@ RUN apt-get update \
         python3-all \
         python3-all-dev \
         python3-tk \
-
         vim \
         git \
         wget \
@@ -22,7 +21,6 @@ RUN apt-get update \
         # libpq-dev \
         # build-essential \
         # cmake \
-
         # sqlite3 \
         # libsqlite3-dev \
         # libboost-dev \
@@ -38,7 +36,6 @@ RUN apt-get update \
         # libeigen3-dev \
         # openjdk-11-jdk \
         # openjdk-11-jre \
-
         # ncbi-blast+ \
 	    # libigraph0v5 \
 	    # libigraph0-dev \
