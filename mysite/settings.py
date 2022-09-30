@@ -102,7 +102,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 db_config_file = "mysql_config.yaml"
 if os.path.exists(db_config_file):
-    logging.info(f"Logging to MySQL using {mysql_config.yaml} file.")
+    logging.info(f"Logging to MySQL using {db_config_file} file.")
     with open(db_config_file, "r") as dbconf_fh:
         db_config = yaml.safe_load(dbconf_fh)
 else:
