@@ -63,4 +63,7 @@ ADD ./mysql_config_spin.yaml /root/django-mysite/mysql_config.yaml
 
 WORKDIR /root/django-mysite
 
-CMD python3 manage.py makemigrations; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000
+
+# The '--insecure' flag is needed to render the 'static' and 'media' files if DEBUG=False.
+# TODO: Find a better alternative to this for production website.
+CMD python3 manage.py makemigrations; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000 --insecure
