@@ -4,10 +4,9 @@ Introduction
 ------------
 This directory has all of the python files necessary for testing submitting
 GraphDot property prediction jobs through the superfacility API (sfapi):
-  prop_cori_test.py - stub of what the API should return on Cori Haswell
-  prop_perl_test.py - stub of what the API should return on Perlmutter CPU
-  prop_perl.py - real call to GraphDot property prediction on GPUs
-  prop_sfapi.py - class that wraps the SF API calls
+  prop_pred_stub.py - stub of what the API should return (for Cori, Perlmutter)
+  prop_pred.py - (TBD) real call to GraphDot property prediction on GPUs
+  prop_sfapi.py - class that wraps the SF API calls to submit prop_pred jobs
   test_sfapi.py - driver for tests on Cori or Perlmutter
 
 SFAPI Client Keys
