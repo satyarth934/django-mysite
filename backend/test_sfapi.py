@@ -14,12 +14,12 @@ print("Starting test: " + current_time)
 
 # Create the PropertyPredictor for client running on cori
 # debug = 1 # produces more output
-# debug = 2 # produces a lot of output
-debug = 0 # produces minimal output
+debug = 2 # produces a lot of output
+# debug = 0 # produces minimal output
 
 # 1. Choose one of these for where the client is running (for correct keys)
-# client_sys = "spin"
-client_sys = "cori"
+client_sys = "spin"
+# client_sys = "cori"
 # client_sys = "perl"
 # 2. Choose pairs of these to indicate what/where to run
 # target_sys = "perl" # call real code on Perlmutter GPUs

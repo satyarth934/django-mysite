@@ -27,7 +27,8 @@ class PropertyPredictor:
       debug - 0 (minimal), 1 (some), 2 (verbose) debug output
     '''
     def __init__(self, client_sys, target_job="perl", debug=0):
-        self.path = "/global/cfs/cdirs/m3513/molinv/rev3"
+        # self.path = "/global/cfs/cdirs/m3513/molinv/rev3"
+        self.path = "."
         self.token_url = "https://oidc.nersc.gov/c2id/token"
         self.sfapi_url = "https://api.nersc.gov/api/v1.2"
         self.poll_sec = 2
@@ -123,7 +124,7 @@ class PropertyPredictor:
             header = "#!/bin/bash\n#SBATCH -A m3513_g\n#SBATCH -C gpu\n#SBATCH -q regular\n#SBATCH -t 0:10:00\n#SBATCH -n 1\n#SBATCH -o " + self.path + "/%j.log\n#SBATCH --ntasks-per-node=1\n#SBATCH -c 128\n#SBATCH --gpus-per-task=1\n\n\nmodule load python\nsource /global/homes/u/u6336/venv/graphdot/bin/activate\n\nexport SLURM_CPU_BIND=\"cores\"\n"
             command = "\nsrun -n 1 -c 64 --cpu_bind=cores "+self.path+run
         else: # self.target_sys=="cori", stub only
-            header = "#!/bin/bash\n#SBATCH -A m3513\n#SBATCH -N 1\n#SBATCH -C haswell\n#SBATCH -q debug\n#SBATCH -t 00:05:00\n#SBATCH -o " + self.path + "/%j.log\n\n"
+            header = "#!/bin/bash\n#SBATCH -A m3513\n#SBATCH -N 1\n#SBATCH -C haswell\n#SBATCH -q regular\n#SBATCH -t 00:05:00\n#SBATCH -o " + self.path + "/%j.log\n\n"
             command = "\nsrun -n 1 -c 64 --cpu_bind=cores "+self.path+run
 
         # Build up the submit script as a string
@@ -131,7 +132,7 @@ class PropertyPredictor:
         if self.debug > 1:
             print("Submit script")
             print(submit_script)
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys
         retval = self.session.post(url,
                 data = {"job": submit_script, "isPath": False})
         if self.debug > 1:
@@ -176,7 +177,7 @@ class PropertyPredictor:
         retval = dict()
         if self.debug > 0:
             print('\nSacct job ' + job_id + ' status API call:')
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys +"/"+job_id+"?sacct=true"
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys +"/"+job_id+"?sacct=true"
         if self.debug > 0:
             print(url)
         result = self.session.get(url)
@@ -201,7 +202,7 @@ class PropertyPredictor:
     def job_status_squeue(self, job_id):
         if self.debug > 0:
             print('\nSqueue job ' + job_id + ' status API call:')
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys+"/"+job_id
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys+"/"+job_id
         if self.debug > 0:
             print(url)
         result = self.session.get(url)
@@ -230,7 +231,7 @@ class PropertyPredictor:
         if self.debug > 0:
             print('\nDownload file API call:')
             print(filepath)
-        getcmd = self.sfapi_url+"/utilities/download/"+self.client_sys+"/"+filepath
+        getcmd = self.sfapi_url+"/utilities/download/"+self.target_sys+"/"+filepath
         if self.debug > 0:
             print(getcmd)
         result = self.session.get(getcmd).json()
