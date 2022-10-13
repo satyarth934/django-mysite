@@ -13,3 +13,4 @@ django-widget-tweaks
 pymysql
 django-allauth
 pyyaml
+authlib
