@@ -1,0 +1,60 @@
+Backend for submitting Biomolecular Architect queries to Perlmutter GPUs
+
+Introduction
+------------
+This directory has all of the python files necessary for testing submitting
+GraphDot property prediction jobs through the superfacility API (sfapi):
+  prop_pred_stub.py - stub of what the API should return (for Cori, Perlmutter)
+  prop_pred.py - (TBD) real call to GraphDot property prediction on GPUs
+  prop_sfapi.py - class that wraps the SF API calls to submit prop_pred jobs
+  test_sfapi.py - driver for tests on Cori or Perlmutter
+
+SFAPI Client Keys
+-----------------
+These are files with PEM format private keys for clients that call the SFAPI.
+The files must exist for each of the client_sys options:
+  private_cori.pem - for Cori login nodes
+  private_perl.pem - for Perlmutter login nodes
+  private_spin.pem - for Spin-hosted application nodes
+
+Usage - Run stub standalone mode
+--------------------------------
+To just run the stub as a python script:
+
+(NOTE: copy as one line, no newlines)
+Example:
+./prop_pred_stub.py "['C=CC[C@@H](CCCC)CCC(=O)O','C=CC[C@H](CCC(=O)O)CC(C)C','C=CC[C@@H](CC)C[C@H](CC)C(=O)O']" "{'RON':None, 'CN':None}"
+ 
+Sample Output:
+
+Start Time = 11:29:13
+
+---Begin Property Predictions---
+{'CN_dev': [0.4156891939914513, 0.0015548780410624685, 0.5241066024458764], 'RON_dev': [0.1492643511041022, 0.7620339335885769, 0.044724797125542226], 'CN': [15.619416442290499, 19.1843062387769, 11.950773902469924], 'RON': [14.20732285035863, 13.838499006398305, 12.181339292978755]}
+---End Property Predictions---
+
+End Time = 11:29:13
+
+Usage - Call sfapi in standalone mode
+--------------------------------
+To run the end-to-end scripts 
+
+0   Copy these to a directory where you want them to run, check permissions
+    (group m3513, dir 2770 permissions w/ sticky bit, files 770)
+    Modify prop_sfapi.py "self.path" variable to point there.
+    NOTE: sfapi keys and .py files *must* be in this dir
+    NOTE: slurm output will be in this directory too)!
+
+1   Choose a combination of (1) where the client is running and (2) what to run.
+    Then modify test_sfapi.py for:
+      client_sys = 'cori', 'perl', or 'spin' (where client is running from)
+      target_job = 'cori_test', 'perl_test', (stub tests) or 'perl' (for real)
+    For additional debug info, make debug=1 or 2
+ 
+2   Run the script:
+    ./test_sfapi.py 
+ 
+    Sample Dictionary Output:
+{'CN_dev': [0.5194887091410073, 0.6983061179806591, 0.44325813269693826], 'RON_dev': [0.4430912933346375, 0.7839214386250254, 0.6446953053267908], 'CN': [15.52399098508925, 11.442535904463284, 10.676358281348532], 'RON': [10.127942411390203, 16.890252657766883, 19.81320505963582]}
+
+
