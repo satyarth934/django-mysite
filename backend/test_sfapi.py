@@ -31,7 +31,7 @@ system = "perlmutter"
 
 # pp = prop.PropertyPredictor(client_sys, target_sys, debug)
 
-path = "/global/cfs/cdirs/m3513/molinv/rev5" # path to where batch job runs
+path = "/global/cfs/cdirs/m3513/molinv/prod" # path to where batch job runs
 client_id = "BIOARC_PERL_ID" # this environment variable = SFAPI client id
 client_pem = "BIOARC_PERL_PEM" # this environment variable = private PEM key
 client_env = True
