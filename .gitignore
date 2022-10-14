@@ -669,3 +669,5 @@ form_test_view.html
 *mysql_config*.yaml
 django_secret_key
 archive/
+sfapi.py
+sfapi_working.py
