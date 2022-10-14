@@ -152,19 +152,11 @@ def make_kernel():
         q=0.05
     ))
 
-# GPR Models
-# CN - cetane number 
-# FP - flash point
-# H1 - receptor pKd
-# M2 - receptor pKd
-# MP - melting point
-# RON - research octane number 
-# YSI - yield sooting index
-
-# properties = ['CN', 'FP', 'H1', 'M2', 'MP', 'RON', 'YSI']
 prop_gpr = dict()
 path = '/global/cfs/cdirs/m3513/molinv/'
-# for prop in properties:
+if debug:
+    print("Loading models from: "+path+"models")
+
 for p in prop:
     print('Creating ' + p + ' predictor ...')
     gpr = GaussianProcessRegressor(
@@ -176,12 +168,14 @@ now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 print("Done with GPR model initialization, Time =", current_time)
 
-print(smiles_query)
+if debug:
+    print(smiles_query)
 
 molout = []
 
 for smilesin in smiles_query:
-    print(smilesin)
+    if debug:
+        print(smilesin)
     inputmol = MolFromSmiles(smilesin)
     Chem.SanitizeMol(inputmol)
     molout.append(inputmol)
@@ -200,11 +194,11 @@ for p in prop:
     if debug:
         print("Property: "+p+' predictions:')
     z, s = prop_gpr[p].predict(graphs_query, return_std=True)
-    print(type(z.tolist()))
-    print(z)
-    print(s)
-    retval[p].append(z.tolist())
-    retval[p+'_dev'].append(s.tolist())
+    if debug:
+        print(z.tolist())
+        print(s.tolist())
+    retval[p] = z.tolist()
+    retval[p+'_dev'] = s.tolist()
 
 
 now = datetime.now()

@@ -22,12 +22,12 @@ debug = 2 # produces a lot of output
 # client_sys = "cori"
 client_sys = "perl"
 # 2. Choose pairs of these to indicate what/where to run
-# target_sys = "perl" # call real code on Perlmutter GPUs
-# system = "perlmutter"
-# target_sys = "cori_test" # call test code on Cori Haswell nodes
-# system = "cori"
-target_job = "perl_test" # call test code on Perlmutter AMD CPU (no GPU)
+target_job = "perl" # call real code on Perlmutter GPUs
 system = "perlmutter"
+# target_job = "cori_test" # call test code on Cori Haswell nodes
+# system = "cori"
+# target_job = "perl_test" # call test code on Perlmutter AMD CPU (no GPU)
+# system = "perlmutter"
 
 # pp = prop.PropertyPredictor(client_sys, target_sys, debug)
 
