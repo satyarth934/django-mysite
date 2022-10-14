@@ -1,53 +1,64 @@
-from collections import defaultdict
-from django.shortcuts import render, redirect
+###########
+# Imports #
+###########
+import warnings
+from mysite import utils
+warnings.formatwarning = utils.warning_format    # Defining a specific format to print warnings on console
 
-from django.http import HttpResponse
-from rdkit import Chem
+import logging
+logger = logging.getLogger(f"{__name__}")
 
+import numpy as np
 import pandas as pd
+from pprint import pprint
+from collections import defaultdict
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.template import loader
 from django.forms import formset_factory
 from django.views.generic.base import TemplateView
 
 from retroapp import constants
 from retroapp.constants import ASCENDING, DESCENDING, NO_SORT, MOLECULE_PROPERTIES, SORTING_OPTIONS
-
-import retrotide
-from pprint import pprint
-from mysite import utils
-import warnings
-warnings.formatwarning = utils.warning_format    # Defining a specific format to print warnings on console
-
-import numpy as np
-import logging
-logger = logging.getLogger(f"{__name__}")
-
 from retroapp.models import QueryDB, QueryPropertyDB, QueryResultsDB
 from retroapp.forms_2 import FormQuery, FormQueryProperty
 from retroapp import utils
+
+import retrotide
+from rdkit import Chem
 
 ######################
 # Webpage views here #
 ######################
 
-# View function for index (blank) URL
 @utils.log_function
 def index(request):
+    """View function for index (blank) URL.
+    """
     return redirect('home', permanent=False)
 
 
-# View function for home URL
 @utils.log_function
 def home(request):
+    """View function for home URL.
+    """
     template = loader.get_template("retroapp/home.html")
     context = {}
     rendered_str = template.render(context, request)
     return HttpResponse(rendered_str)
 
 
-# View function for search URL
 @utils.log_function
 def search(request):
+    """View function for search URL.
+    Renders ERROR page if the user is not logged in.
+    Renders an empty form if the search page is opened.
+    When the submit button is clicked:
+    - Saves the search query in the database.
+    - Renders the result below the form. (To be modified)
+    - Render an information page below the form informing that the search job is submitted for the specified query. (Replacement for the above feature)
+    """
     #####################################################################
     # When user is NOT logged in. 
     #####################################################################
@@ -63,7 +74,7 @@ def search(request):
     #####################################################################
     # Open the Search Page only when the user is logged in. 
     #####################################################################
-    # smiles_form = SMILESForm(
+    # Initialize the query form
     smiles_form = FormQuery(
         initial={
             'Q_smiles': None,
@@ -81,7 +92,7 @@ def search(request):
         }
         return render(request, "retroapp/search.html", context)
     
-    else:
+    else:    # If this is a POST request, update database and invoke search.
         smiles_form = FormQuery(request.POST)
         property_formset = PropertyFormSet(request.POST)
         property_formset.form_kwargs["empty_permitted"] = False
@@ -139,6 +150,23 @@ def search(request):
 # View function for search results in the same search page
 @utils.log_function
 def pks_search_result(request):
+    """[Deprecated]
+    This function is called when the search query is submitted.
+    Tasks performed by this function:
+    1. Getting retrotide results. (Dummy values for all the properties. Only RON value is not dummy)
+    2. Apply filtering constraints on the results.
+    3. Apply specified sorting on the results.
+    4. Add resulting data to QueryResultsDB.
+    5. Render the results as HTML page to show below the query form.
+
+    [To be modified]
+    Above mentioned logic will be modified to incorporate SF API. 
+    The results will no longer directly be available.
+    The user will be notified that the query request has been submitted. 
+    The query status and the results can be checked on the `History` webpage.
+
+    # TODO: Implement the above.
+    """
     
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
         request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
@@ -256,8 +284,11 @@ def pks_search_result(request):
         return HttpResponse("404: No search query!")
 
 
-# View for history page
 class QueryHistoryView(TemplateView):
+    """View for history page.
+    The submitted queries and their results can be accessed from here.
+    """
+
     template_name = "retroapp/history.html"
 
     @utils.log_function
@@ -310,8 +341,12 @@ class QueryHistoryView(TemplateView):
 #         return render(request, "retroapp/guest_landing_page.html", context)
 
 
-# View for history results page
 class QueryHistoryResultView(TemplateView):
+    """View for history results page.
+    The results for the submitted queries can be accessed from here.
+    Each submitted SMILES string has a hyperlink to this results page for that query request.
+    """
+
     template_name = "retroapp/history_result.html"
 
     @utils.log_function
@@ -337,6 +372,9 @@ class QueryHistoryResultView(TemplateView):
 # View function for about URL
 @utils.log_function
 def about(request):
+    """View function for about URL.
+    """
+
     template = loader.get_template("retroapp/about.html")
     context = {}
     rendered_str = template.render(context, request)
@@ -346,6 +384,9 @@ def about(request):
 # View function for smilesstr URL
 @utils.log_function
 def retrotide_usage(request, smiles, width=243):
+    """Django wrapper for using retrotide API.
+    """
+
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
     retro_df = retrotide_call(smiles=smiles)
@@ -364,12 +405,19 @@ def retrotide_usage(request, smiles, width=243):
 ########################
 
 def predict_property_api(property):
+    """Dummy function call to replicate the molecule property prediction.
+    Returns random values for the query properties requested.
+    """
+
     warnings.warn(f"Populating {property} with RANDOM values.")    # DELETE
     return np.random.randint(0,100)
 
 
 @utils.log_function
 def retrotide_call(smiles, properties=None):
+    """Retrotide API call.
+    """
+
     designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
 
     if properties is not None:    # Convert to a list if properties is not None
@@ -397,10 +445,22 @@ def retrotide_call(smiles, properties=None):
 
 
 def isrange(property_value_str):
+    """Checks whether the specified property is a range or not.
+
+    Args:
+        property_value_str (str): Input property value string from the form.
+
+    Returns:
+        bool: True if the property is a range, False otherwise.
+    """
+
     return " - " in property_value_str
 
 
 def clean_sulfur_from_smiles_string(input_smiles, idx=0):
+    """Cleans sulfur molecule from the SMILES string.
+    """
+
     try:
         input_mol = Chem.MolFromSmiles(input_smiles)
         Chem.SanitizeMol(input_mol)
