@@ -22,29 +22,33 @@ class PropertyPredictor:
 
     '''
     Constructor to setup the sfapi client and system/job to run:
-      client_sys - 'cori', 'perl', or 'spin' (where client is running from)
+      path - NOTE: this is where the job will run and output goes
+      client_id - string, SFAPI client id (or env var name with)
+      client_pem - string, SFAPI client private PEM key (or env var name with)
+      client_env - if True, get the sfapi client info from environment vars
       target_job - 'cori_test', 'perl_test', (stub tests) or 'perl' (real)
       debug - 0 (minimal), 1 (some), 2 (verbose) debug output
     '''
-    def __init__(self, client_sys, target_job="perl", debug=0):
-        self.path = "/global/cfs/cdirs/m3513/molinv/rev3"
+    def __init__(self, path, client_id, client_pem, client_env=True,
+                 target_job="perl", debug=0):
         self.token_url = "https://oidc.nersc.gov/c2id/token"
         self.sfapi_url = "https://api.nersc.gov/api/v1.2"
         self.poll_sec = 2
         self.debug = debug
+        # (ignore) client_sys - 'cori', 'perl', or 'spin' (where client is running from)
         # Setup for where the client is calling from
-        if client_sys == "cori": # Cori login nodes
-            self.client_id = "65cdtjh2bdw6m"
-            self.private_key = Path(self.path+"/private_cori.pem").read_text()
-        elif client_sys == "perlmutter": # Perlmutter login nodes
-            self.client_id = "dzgc2ttfsaduw"
-            self.private_key = Path(self.path+"/private_cori.pem").read_text()
-        elif client_sys == "spin": # Spin instance nodes
-            self.client_id = "fljm3ujlzjnby"
-            self.private_key = Path(self.path+"/private_spin.pem").read_text()
-        else: # Not supported
-            raise Exception("Client system = " + client_sys + " not supported.")
-        self.client_sys = client_sys
+        # if client_sys == "cori": # Cori login nodes
+        #     self.client_id = "65cdtjh2bdw6m"
+        #     self.private_key = Path(self.path+"/private_cori.pem").read_text()
+        # elif client_sys == "perlmutter": # Perlmutter login nodes
+        #     self.client_id = "dzgc2ttfsaduw"
+        #     self.private_key = Path(self.path+"/private_cori.pem").read_text()
+        # elif client_sys == "spin": # Spin instance nodes
+        #     self.client_id = "fljm3ujlzjnby"
+        #     self.private_key = Path(self.path+"/private_spin.pem").read_text()
+        # else: # Not supported
+        #     raise Exception("Client system = " + client_sys + " not supported.")
+        # self.client_sys = client_sys
 
         # Setup for what code is running where
         if target_job == "perl": # Run real jobs on Perlmutter
@@ -58,6 +62,28 @@ class PropertyPredictor:
             self.test = True
         else: # Not supported
             raise Exception("Target system = " + target_sys + " not supported.")
+
+        if len(path)==0:
+            raise Exception("Empty path to job project? Required arg!")
+        if debug > 0:
+            print("\n Using job path: " + path) 
+        self.path = path
+
+        # Check that the environment variables exists and has non-zero len
+        if client_env:
+            client_id_env = client_id # copy env var names
+            client_id = os.getenv(client_id_env)
+        if (client_id is None) or (len(client_id)==0):
+            raise Exception("Empty SFAPI client id empty: " + \
+                    client_id_env)
+        self.client_id = client_id
+        if client_env:
+            client_pem_env = client_pem
+            client_pem = os.getenv(client_pem_env)
+        if (client_pem is None) or (len(client_pem)==0):
+            raise Exception("Empty SFAPI client PEM empty: " + \
+                    client_pem_env)
+        self.client_pem = client_pem
 
     def __str__(self):
         vals = dict()
@@ -123,7 +149,7 @@ class PropertyPredictor:
             header = "#!/bin/bash\n#SBATCH -A m3513_g\n#SBATCH -C gpu\n#SBATCH -q regular\n#SBATCH -t 0:10:00\n#SBATCH -n 1\n#SBATCH -o " + self.path + "/%j.log\n#SBATCH --ntasks-per-node=1\n#SBATCH -c 128\n#SBATCH --gpus-per-task=1\n\n\nmodule load python\nsource /global/homes/u/u6336/venv/graphdot/bin/activate\n\nexport SLURM_CPU_BIND=\"cores\"\n"
             command = "\nsrun -n 1 -c 64 --cpu_bind=cores "+self.path+run
         else: # self.target_sys=="cori", stub only
-            header = "#!/bin/bash\n#SBATCH -A m3513\n#SBATCH -N 1\n#SBATCH -C haswell\n#SBATCH -q debug\n#SBATCH -t 00:05:00\n#SBATCH -o " + self.path + "/%j.log\n\n"
+            header = "#!/bin/bash\n#SBATCH -A m3513\n#SBATCH -N 1\n#SBATCH -C haswell\n#SBATCH -q regular\n#SBATCH -t 00:05:00\n#SBATCH -o " + self.path + "/%j.log\n\n"
             command = "\nsrun -n 1 -c 64 --cpu_bind=cores "+self.path+run
 
         # Build up the submit script as a string
@@ -131,7 +157,7 @@ class PropertyPredictor:
         if self.debug > 1:
             print("Submit script")
             print(submit_script)
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys
         retval = self.session.post(url,
                 data = {"job": submit_script, "isPath": False})
         if self.debug > 1:
@@ -176,7 +202,7 @@ class PropertyPredictor:
         retval = dict()
         if self.debug > 0:
             print('\nSacct job ' + job_id + ' status API call:')
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys +"/"+job_id+"?sacct=true"
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys +"/"+job_id+"?sacct=true"
         if self.debug > 0:
             print(url)
         result = self.session.get(url)
@@ -201,7 +227,7 @@ class PropertyPredictor:
     def job_status_squeue(self, job_id):
         if self.debug > 0:
             print('\nSqueue job ' + job_id + ' status API call:')
-        url = self.sfapi_url+"/compute/jobs/"+self.client_sys+"/"+job_id
+        url = self.sfapi_url+"/compute/jobs/"+self.target_sys+"/"+job_id
         if self.debug > 0:
             print(url)
         result = self.session.get(url)
@@ -230,7 +256,7 @@ class PropertyPredictor:
         if self.debug > 0:
             print('\nDownload file API call:')
             print(filepath)
-        getcmd = self.sfapi_url+"/utilities/download/"+self.client_sys+"/"+filepath
+        getcmd = self.sfapi_url+"/utilities/download/"+self.target_sys+"/"+filepath
         if self.debug > 0:
             print(getcmd)
         result = self.session.get(getcmd).json()
