@@ -77,6 +77,7 @@ class PropertyPredictor:
             raise Exception("Empty SFAPI client id empty: " + \
                     client_id_env)
         self.client_id = client_id
+        print("Client id:\n"+self.client_id+"\n")
         if client_env:
             client_pem_env = client_pem
             client_pem = os.getenv(client_pem_env)
@@ -84,6 +85,7 @@ class PropertyPredictor:
             raise Exception("Empty SFAPI client PEM empty: " + \
                     client_pem_env)
         self.client_pem = client_pem
+        print("Client PEM:\n"+self.client_pem+"\n")
 
     def __str__(self):
         vals = dict()
@@ -105,7 +107,7 @@ class PropertyPredictor:
     '''
     def open_session(self):
         # TODO: check if a session is already open 
-        self.session = OAuth2Session(self.client_id, self.private_key,
+        self.session = OAuth2Session(self.client_id, self.client_pem,
             PrivateKeyJWT(self.token_url), grant_type="client_credentials",
             token_endpoint=self.token_url)
         self.session.fetch_token()
