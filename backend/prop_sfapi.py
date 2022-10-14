@@ -148,7 +148,7 @@ class PropertyPredictor:
             run="/prop_pred.py"
 
         if self.target_sys=="perlmutter":
-            header = "#!/bin/bash\n#SBATCH -A m3513_g\n#SBATCH -C gpu\n#SBATCH -q regular\n#SBATCH -t 00:05:00\n#SBATCH -n 1\n#SBATCH -o " + self.path + "/%j.log\n#SBATCH --ntasks-per-node=1\n#SBATCH -c 128\n#SBATCH --gpus-per-task=1\n\n\nmodule load python\nsource /global/homes/u/u6336/venv/graphdot/bin/activate\n\nexport SLURM_CPU_BIND=\"cores\"\n"
+            header = "#!/bin/bash\n#SBATCH -A m3513_g\n#SBATCH -C gpu\n#SBATCH -q regular\n#SBATCH -t 00:05:00\n#SBATCH -n 1\n#SBATCH -o " + self.path + "/%j.log\n#SBATCH --ntasks-per-node=1\n#SBATCH -c 128\n#SBATCH --gpus-per-task=1\n\n\nmodule load python\nsource /global/cfs/cdirs/m3513/molinv/venv/graphdot/bin/activate\n\nexport SLURM_CPU_BIND=\"cores\"\n"
             command = "\nsrun -n 1 -c 64 --cpu_bind=cores "+self.path+run
         else: # self.target_sys=="cori", stub only
             header = "#!/bin/bash\n#SBATCH -A m3513\n#SBATCH -N 1\n#SBATCH -C haswell\n#SBATCH -q regular\n#SBATCH -t 00:05:00\n#SBATCH -o " + self.path + "/%j.log\n\n"
