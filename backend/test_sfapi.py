@@ -55,7 +55,8 @@ if status=='unavailable':
 
 # Prepare the test input
 #   list of smiles strings, double-quoted for command line
-mols_string = "\"['C=CC[C@@H](CCCC)CCC(=O)O','C=CC[C@H](CCC(=O)O)CC(C)C','C=CC[C@@H](CC)C[C@H](CC)C(=O)O']\""
+# mols_string = "\"['C=CC[C@@H](CCCC)CCC(=O)O','C=CC[C@H](CCC(=O)O)CC(C)C','C=CC[C@@H](CC)C[C@H](CC)C(=O)O']\""
+mols_string = "\"['CCCCCCCCCCCCCCCC', 'CC1=CC=CC2=CC=CC=C12', 'CC(CC(C)(C)C)CC(C)(C)CC(C)(C)C', 'CC(C)CC(C)(C)C', 'O=C(O)CCCCCCCCCCC\\C=C/CCCCCCCC', 'CC[C@@H]1[C@@H](/C=C/C(=O)[C@@H](C[C@@H]([C@@H]([C@H](C(=O)[C@H](C(=O)O1)C)C)O)C)C)C']\""
 smiles = eval(mols_string)
 #   dict of property code strings, double-quoted for command line
 props_string = "\"{'RON':None, 'CN':None}\"" 
