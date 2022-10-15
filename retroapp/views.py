@@ -1,6 +1,7 @@
 ###########
 # Imports #
 ###########
+from typing import List, Optional, Union
 import warnings
 from mysite import utils
 warnings.formatwarning = utils.warning_format    # Defining a specific format to print warnings on console
@@ -13,6 +14,7 @@ import pandas as pd
 from pprint import pprint
 from collections import defaultdict
 
+import uuid
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.template import loader
@@ -97,6 +99,7 @@ def search(request):
         property_formset = PropertyFormSet(request.POST)
         property_formset.form_kwargs["empty_permitted"] = False
 
+        # Inserting values in QueryDB
         if smiles_form.is_valid():
             logger.info("[VALID] smiles_form!!")
             logger.info(smiles_form.cleaned_data)
@@ -112,6 +115,7 @@ def search(request):
             logger.error("[INVALID] smiles_form!!")
             logger.info(smiles_form.__dict__)
         
+        # Inserting values in QueryPropertyDB
         if property_formset.is_valid():
             logger.info("[VALID] property_formset")
 
@@ -141,13 +145,64 @@ def search(request):
         # return render(request, "formsetapp/index.html", {})
         if smiles_form.is_valid() and property_formset.is_valid():
             request.session['_form_state'] = request.POST
+            request.session['_q_uuid'] = str(Q_uuid_fk.Q_uuid)    # Will be used to update the Q_Job_id and Q_Status.
             request.session['_search_query_smiles'] = smiles_form.cleaned_data
             request.session['_search_query_properties'] = [form.cleaned_data for form in property_formset]
             # return redirect('pks', permanent=False)
-            return pks_search_result(request)
+            # return pks_search_result(request)
+            return pks_search_result_sfapi(request)
 
 
-# View function for search results in the same search page
+@utils.log_function
+def pks_search_result_sfapi(request):
+    """Newer version of `pks_search_result`.
+    """
+
+    if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
+        request.session.set_expiry(value=0)    # user’s session cookie will expire when the user’s web browser is closed
+        # search_query = request.session.get('_search_query')
+        search_query_smiles = request.session['_search_query_smiles']
+        search_query_properties = request.session['_search_query_properties']
+        logger.info(f"search_query_smiles = {search_query_smiles}")
+        logger.info(f"search_query_properties = {search_query_properties}")
+        search_query = dict()
+        search_query["q_uuid"] = request.session['_q_uuid']
+        search_query["smiles_string"] = search_query_smiles["Q_smiles"]
+        search_query["notes"] = search_query_smiles["Q_notes"]
+        search_query["properties"] = search_query_properties
+        logger.info(f"search_query = {search_query}")
+
+        # Calling retrotide API
+        mol_properties = [
+            list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
+            for d in search_query["properties"]
+        ]
+
+        # TODO: Get results from `retrotide_call_sfapi`.
+        job_id, status = retrotide_sfapi_call(
+            smiles=search_query["smiles_string"],
+            properties=mol_properties,
+        )
+        logger.info("Submitted the query job!")
+
+        # Update the Job ID and Status for the submitted query in the database.
+        qdb = QueryDB.objects.get(Q_uuid=uuid.UUID(search_query["q_uuid"]))
+        qdb.Q_Job_id = job_id  # change Q_Job_id
+        qdb.Q_Status = status  # change Q_Status
+        qdb.save() # this will update the row in the QueryDB database
+        logger.info("Updated job_id and status in the database!")
+
+        # Landing page
+        context = {
+            "message": "Query submitted!"
+        }
+        return render(request, "retroapp/query_submitted.html", context)
+
+    else:
+        logger.warn("404: No search query!")
+        return HttpResponse("404: No search query!")
+
+
 @utils.log_function
 def pks_search_result(request):
     """[Deprecated]
@@ -165,7 +220,7 @@ def pks_search_result(request):
     The user will be notified that the query request has been submitted. 
     The query status and the results can be checked on the `History` webpage.
 
-    # TODO: Implement the above.
+    # TODO: Implement the above. work on sfapi-integration branch.
     """
     
     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
@@ -292,6 +347,17 @@ class QueryHistoryView(TemplateView):
     template_name = "retroapp/history.html"
 
     @utils.log_function
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        # Update Databases only if the user is authenticated.
+        if not self.request.user.is_authenticated:
+            # TODO: Update QueryDB status
+            # TODO: Update QueryResultsDB if status is COMPLETED
+            pass
+
+
+    @utils.log_function
     def get_context_data(self, **kwargs):
         # User IS NOT authenticated
         if not self.request.user.is_authenticated:
@@ -413,9 +479,107 @@ def predict_property_api(property):
     return np.random.randint(0,100)
 
 
+def get_PropertyPredictor_obj():
+    debug = 0 # produces minimal output
+    # debug = 1 # produces more output
+    # debug = 2 # produces a lot of output
+
+    # client_sys = "spin"
+    target_job = "perl_test"
+    system = "perlmutter"
+
+    path = "/global/cfs/cdirs/m3513/molinv/rev5" # path to where batch job runs
+    # path = "/global/cfs/cdirs/m3513/molinv/prod" # path to where batch job runs
+    client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
+    client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key
+    client_env = True
+
+    pp = prop.PropertyPredictor(
+        path, 
+        client_id, 
+        client_pem, 
+        client_env, 
+        target_job, 
+        debug, 
+    )
+
+    # Check if PropertyPredictor was initialized correctly.
+    pp.open_session()
+    status = pp.check_status()
+    logger.log(f"System: {system}, status: {status}")
+    if status=='unavailable':
+        raise Exception(f"Target system: {system} status='unavailable', exiting")
+
+    return pp
+
+
+@utils.log_function
+def retrotide_sfapi_call(smiles: str, properties: Union[str, List]=None) -> pd.DataFrame:
+    """Newer version of `retrotide_call`.
+    The properties are currently being estimated using GraphDot. This might change in the future.
+
+    Args:
+        smiles (str): Input SMILES string.
+        properties (Union[str, List], optional): List of properties which are to be estimated using GraphDot. Defaults to None.
+
+    Returns:
+        pd.DataFrame: Output result from retrotide and GraphDot returned as a DataFrame.
+    """
+
+    designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
+    if properties is not None:    # Convert to a list if properties is not None
+        properties = [properties] if isinstance(properties, str) else properties
+        
+    else:
+        properties = []
+        logger.warn(f"No properties mentioned.")
+
+    # Store retrotide results in a dict.
+    df_dict = defaultdict(list)
+    for i in range(len(designs[-1])):
+        df_dict["SMILES"].append(Chem.MolToSmiles(designs[-1][i][2]))
+        df_dict["Retrotide_Similarity_SCORE"].append(designs[-1][i][1])
+        df_dict["DESIGN"].append(designs[-1][i][0].modules)
+    
+    # # TODO: Make SFAPI call here. 
+    # pp = get_PropertyPredictor_obj()
+    # pp.open_session()
+    # props = {property: None for property in properties}
+    # job_id = pp.submit_query(df_dict["SMILES"], props)
+    # status = pp.job_status(job_id)
+
+    # TODO: DELETE these dummy values and use the above code.
+    job_id = 12345
+    status = "COMPLETED"
+
+    return job_id, status
+
+
+
+    # Get the results. 
+    # Convert to DataFrame. 
+    # Return to `pks_search_result_sfapi`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @utils.log_function
 def retrotide_call(smiles, properties=None):
-    """Retrotide API call.
+    """[Deprecated]
+    Retrotide API call.
+
+    Newer version is implemented in `retrotide_sfapi_call`.
     """
 
     designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
