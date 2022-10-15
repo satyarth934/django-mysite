@@ -11,14 +11,18 @@
         {% include "retroapp/header.html" %}
         
         <body>
-            <table cellspacing="10">
-                
-                <tr>
-                    <td colspan="100" style="text-align: left;">
+            <table style="border: none;">
+                <tr style="border: none;">
+                    <td colspan="100" style="text-align: left; border: none;">
                         Hello {{ user }} ...
                     </td>
+                    <td style="text-align: right; border: none;">
+                        <input type="reset" value="Refresh" name="refresh" id="id_refresh">
+                    </td>
                 </tr>
+            </table>
 
+            <table cellspacing="10">
                 <tr>
                     <th colspan="100" style="text-align: center;">
                         Query History
@@ -37,6 +41,8 @@
                     <th>Min Value</th>
                     <th>Max Value</th>
                     <th>Sorting Mode</th>
+                    <th>Job ID</th>
+                    <th>Job Status</th>
                 </tr>
 
                 {% for query in query_object_list %}
@@ -59,6 +65,11 @@
                             <td>{{ query_prop.Min_value }}</td>
                             <td>{{ query_prop.Max_value }}</td>
                             <td>{{ SORTING_OPTIONS|index:query_prop.Sorting_mode }}</td>
+
+                            {% if forloop.counter == 1 %}
+                                <td rowspan="{{ query.1.count }}">{{ query.0.Q_Job_id }}</td>
+                                <td rowspan="{{ query.1.count }}">{{ query.0.Q_Status }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 {% endfor %}
