@@ -1,5 +1,14 @@
 import numpy as np
 
+def create_twoway_dict(input_dict):
+    temp_dict = dict()
+    for k, v in input_dict.items():
+        temp_dict[k] = v
+        temp_dict[v] = k
+
+    return temp_dict
+
+
 MOLECULE_PROPERTIES = {
     "Cetane Number": {
         "min": -np.inf,
@@ -30,6 +39,18 @@ MOLECULE_PROPERTIES = {
         "max": np.inf,
     },
 }
+
+PROPERTY_CODES = {
+    "CN": "Cetane Number",
+    "FP": "Flash Point",
+    "H1": "H1 Receptor pKd",
+    "M2": "M2 Receptor pKd",
+    "MP": "Melting Point",
+    "RON": "Research Octane Number",
+    "YSI": "Yield Sooting Index",
+}
+PROPERTY_CODES = create_twoway_dict(PROPERTY_CODES)
+
 
 # NO_SORT = "No sorting"
 # ASCENDING = "Lower is better"
