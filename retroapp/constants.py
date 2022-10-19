@@ -51,6 +51,31 @@ PROPERTY_CODES = {
 }
 PROPERTY_CODES = create_twoway_dict(PROPERTY_CODES)
 
+DB_COLUMN_NAMES = {
+    "Cetane Number": "Cetane_number",
+    "Research Octane Number": "Research_octane_number",
+    "Melting Point": "Melting_point",
+    "Flash Point": "Flash_point",
+    "Yield Sooting Index": "Yield_sooting_index",
+    "H1 Receptor pKd": "H1_receptor_pKd",
+    "M2 Receptor pKd": "M2_receptor_pKd",
+
+    "Cetane_Number": "Cetane_number",
+    "Research_Octane_Number": "Research_octane_number",
+    "Melting_Point": "Melting_point",
+    "Flash_Point": "Flash_point",
+    "Yield_Sooting_Index": "Yield_sooting_index",
+    "H1_Receptor_pKd": "H1_receptor_pKd",
+    "M2_Receptor_pKd": "M2_receptor_pKd",
+
+    "CN": "Cetane_number",
+    "FP": "Research_octane_number",
+    "H1": "Melting_point",
+    "M2": "Flash_point",
+    "MP": "Yield_sooting_index",
+    "RON": "H1_receptor_pKd",
+    "YSI": "M2_receptor_pKd",
+}
 
 # NO_SORT = "No sorting"
 # ASCENDING = "Lower is better"
