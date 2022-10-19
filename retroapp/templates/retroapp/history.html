@@ -76,4 +76,20 @@
             </table>
         </body>
     {% endif %}
+
+    <!-- RESET form -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#id_refresh").click(function (event) {
+                $.ajax({
+                    type: "GET",
+                    url: 'history',
+                    success: function (response) {
+                        location.reload(true);
+                    }
+                });
+            });
+        })
+    </script>
 </html>
