@@ -55,6 +55,8 @@ class QueryPropertyDB(models.Model):
         max_length=10,
         choices=constants.SORT_OPTIONS.choices,
         default=constants.SORT_OPTIONS.DESCENDING,
+        blank=True,
+        null=True,
     )
 
 
