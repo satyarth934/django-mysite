@@ -39,24 +39,24 @@
                     <th>M2_receptor_pKd Mode</th>
                 </tr>
                 
-                {% for query in query_res_object %}
+                {% for query in query_res_object.itertuples %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ query.SMILES }}</td>
-                        <td>{{ query.Retrotide_Similarity_SCORE }}</td>
+                        <td>{{ query.Retrotide_Similarity_SCORE|sigfig }}</td>
                         <td>
                             <div title="{{ query.DESIGN }}">
                                 Hover here to see the full data
                             </div>
                         </td>
                     
-                        <td>{{ query.Cetane_number }}</td>
-                        <td>{{ query.Research_octane_number }}</td>
-                        <td>{{ query.Melting_point }}</td>
-                        <td>{{ query.Flash_point }}</td>
-                        <td>{{ query.Yield_sooting_index }}</td>
-                        <td>{{ query.H1_receptor_pKd }}</td>
-                        <td>{{ query.M2_receptor_pKd }}</td>
+                        <td>{{ query.Cetane_number|sigfig }}</td>
+                        <td>{{ query.Research_octane_number|sigfig }}</td>
+                        <td>{{ query.Melting_point|sigfig }}</td>
+                        <td>{{ query.Flash_point|sigfig }}</td>
+                        <td>{{ query.Yield_sooting_index|sigfig }}</td>
+                        <td>{{ query.H1_receptor_pKd|sigfig }}</td>
+                        <td>{{ query.M2_receptor_pKd|sigfig }}</td>
                     </tr>
                 {% endfor %}
 

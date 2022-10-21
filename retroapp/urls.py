@@ -11,9 +11,6 @@ urlpatterns = [
     path('home', views.home, name='home'),
     path('search', views.search, name='search'),
     
-    # TODO: Use this to get results of previous queries from the database.
-    # path('pks', views.pks_search_result, name='pks_search_result'),
-    
     # path('history', views.history, name='history'),
     path('history', views.QueryHistoryView.as_view(), name='history'),
     path('oldresult', views.QueryHistoryResultView.as_view(), name='history_results'),

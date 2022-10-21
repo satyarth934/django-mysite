@@ -11,7 +11,6 @@ RUN apt-get update \
         python3-all \
         python3-all-dev \
         python3-tk \
-
         vim \
         git \
         wget \
@@ -22,7 +21,6 @@ RUN apt-get update \
         # libpq-dev \
         # build-essential \
         # cmake \
-
         # sqlite3 \
         # libsqlite3-dev \
         # libboost-dev \
@@ -38,7 +36,6 @@ RUN apt-get update \
         # libeigen3-dev \
         # openjdk-11-jdk \
         # openjdk-11-jre \
-
         # ncbi-blast+ \
 	    # libigraph0v5 \
 	    # libigraph0-dev \
@@ -59,10 +56,14 @@ RUN cd /root/retrotide && \
 
 # Clone Website code
 RUN git clone -b spin-setup https://github.com/satyarth934/django-mysite.git
+# RUN git clone -b db-integration https://github.com/satyarth934/django-mysite.git
 
 # Adding MySQL config file to the container
-ADD ./mysql_config_spin.yaml /root/django-mysite/mysql_config.yaml
+# ADD ./mysql_config_spin.yaml /root/django-mysite/mysql_config.yaml
 
 WORKDIR /root/django-mysite
 
-CMD python3 manage.py makemigrations; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000
+
+# The '--insecure' flag is needed to render the 'static' and 'media' files if DEBUG=False.
+# TODO: Find a better alternative to this for production website.
+CMD python3 manage.py makemigrations; python3 manage.py migrate; python3 manage.py runserver 0.0.0.0:8000 --insecure

@@ -31,11 +31,6 @@ body input {
   text-align:  center;
 }
 
-/* DEBUGGING PURPOSE ONLY */
-table, th, tr, td {
-  /* border: 1px solid; */
-}
-
 table.searchForm {
     font-size: 20px;
   

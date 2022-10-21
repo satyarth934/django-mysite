@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+import os
 import yaml
+import logging
 from pathlib import Path
 import pymysql 
 pymysql.install_as_MySQLdb()
@@ -22,18 +24,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x%7f4w%1en)85*1%!*68uzuik5wka%-2=gb7)@icjdr!fd1m%4'
+SECRET_KEY_FILE = 'django_secret_key' if os.path.exists('django_secret_key') else os.environ.get('DJANGO_SECRET_KEY_FILE')
+with open(SECRET_KEY_FILE, 'r') as dsk_fh:
+    SECRET_KEY = dsk_fh.read()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DEBUG_MODE') is None:
+    DEBUG = True
+else:
+    DEBUG = (os.environ.get('DEBUG_MODE') == "True")    # This environment variable is defined in the Spin container
+
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
-    '10.0.0.159', 
-    'localhost', 
-    '127.0.0.1', 
+    'biomoleculararchitect.lbl.gov',
     'molinv.molinv.development.svc.spin.nersc.org',
-    'biomoleculararchitect.lbl.gov',    # TODO: Add certificate to use https protocol.
+    '127.0.0.1', 
+    'localhost', 
 ]
 
 
@@ -41,8 +48,6 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'dfshow.apps.DfshowConfig',
-    'polls.apps.PollsConfig',
     'retroapp.apps.RetroappConfig',
     'renderer.apps.RendererConfig',
     'django.contrib.admin',
@@ -93,7 +98,22 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 db_config_file = "mysql_config.yaml"
-db_config = yaml.safe_load(open(db_config_file, "r"))
+if os.path.exists(db_config_file):
+    logging.info(f"Logging to MySQL using {db_config_file} file.")
+    with open(db_config_file, "r") as dbconf_fh:
+        db_config = yaml.safe_load(dbconf_fh)
+else:
+    logging.info(f"Logging to MySQL using 'MYSQL_PASSWORD_FILE' environment variable.")
+    with open(os.environ.get('MYSQL_PASSWORD_FILE'), 'r') as mysql_pass_fh:
+        mysql_password = mysql_pass_fh.read()
+    
+    db_config = dict(
+        DBNAME=os.environ.get('MYSQL_DATABASE'),
+        USER=os.environ.get('MYSQL_USER'),
+        PASSWORD=mysql_password,
+        HOST=os.environ.get('MYSQL_HOST'),
+        PORT=os.environ.get('MYSQL_PORT'),
+    )
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
@@ -107,7 +127,8 @@ DATABASES = {
         'HOST': db_config['HOST'],
         'PORT': db_config['PORT'],
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            # TODO: confirm that using NO_AUTO_VALUE_ON_ZERO is okay.
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO'"
          }   
     }
 }
@@ -161,7 +182,6 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
 
 # LOGGING
-import os
 logs_path = 'logs/debug.log'
 os.makedirs(os.path.dirname(logs_path), exist_ok=True)
 LOGGING = {
@@ -219,8 +239,11 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Login site redirect
-# SITE_ID = 2 is what works for SPIN NERSC.
-SITE_ID = 2
+if os.environ.get('DJANGO_SITE_ID') is None:
+    SITE_ID = 0
+else:
+    # SITE_ID = 2 is what works for SPIN NERSC.
+    SITE_ID = int(os.environ.get('DJANGO_SITE_ID'))    
 
 LOGIN_REDIRECT_URL = '/retroapp'
 LOGOUT_REDIRECT_URL = '/retroapp'

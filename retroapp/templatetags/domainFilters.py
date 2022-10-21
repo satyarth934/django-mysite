@@ -41,7 +41,9 @@ def urlq(str):
 
 @register.filter
 def sigfig(inputFloat):
-    return '%s' % float('%.3g' % inputFloat)
+    if isinstance(inputFloat, float):
+        return '%s' % float('%.3g' % inputFloat)
+    return inputFloat
 
 
 @register.filter
@@ -88,3 +90,10 @@ def index(indexable, i):
     if i >= len(indexable):
         return f"ERROR: Index out of range. index={i}; len(list)={len(indexable)}"
     return indexable[i]
+
+
+@register.filter
+def fetch_choice_label(indexable, key):
+    if key in indexable:
+        return indexable[key].label
+    return f"ERROR: {key} does not exist in {indexable}."

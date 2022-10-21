@@ -6,10 +6,11 @@ from django.utils.translation import gettext_lazy as _
 
 import re
 
-from retroapp.constants import MOLECULE_PROPERTIES, SORTING_OPTIONS, ASCENDING, DESCENDING, NO_SORT
+from retroapp.constants import MOLECULE_PROPERTIES, MOLECULE_PROPERTY_CONSTRAINTS, SORT_OPTIONS
 from retroapp.models import QueryDB, QueryPropertyDB
 
 from pprint import pprint
+from retroapp import utils
 
 
 class FormQuery(forms.ModelForm):
@@ -50,14 +51,21 @@ class FormQueryProperty(forms.ModelForm):
             "Sorting_mode": "Sorting Mode",
         }
 
+    @utils.log_function
     def clean_Property_name(self):
-        selected_property = self.fields['Property_name'].choices[int(self.cleaned_data['Property_name'])][0]    # choice index value
+        # selected_property = self.fields['Property_name'].choices[int(self.cleaned_data['Property_name'])][0]    # choice index value
+        selected_property = MOLECULE_PROPERTIES[self.cleaned_data["Property_name"]].label
 
-        return selected_property
+        # return selected_property
+        return self.cleaned_data["Property_name"]
 
         
     def clean_property_value_range(self):
-        mol_prop = list(MOLECULE_PROPERTIES.keys())[self.cleaned_data['Property_name']]
+        # mol_prop = list(MOLECULE_PROPERTIES.keys())[self.cleaned_data['Property_name']]
+
+        # breakpoint()
+        # mol_prop = self.cleaned_data['Property_name']
+        mol_prop = MOLECULE_PROPERTIES[self.cleaned_data['Property_name']].label
         mol_prop_val_range = self.cleaned_data['property_value_range']
         mol_prop_val_range = mol_prop_val_range.replace(" ", "")
 
@@ -68,10 +76,10 @@ class FormQueryProperty(forms.ModelForm):
                 # CASE 1: Target
                 target_val = float(mol_prop_val_range)
 
-                if MOLECULE_PROPERTIES[mol_prop]['max'] < \
+                if MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max'] < \
                     target_val < \
-                    MOLECULE_PROPERTIES[mol_prop]['min']:
-                    raise ValidationError(_(f"Invalid target value entered for the property. The value must be between {MOLECULE_PROPERTIES[mol_prop]['min']} and {MOLECULE_PROPERTIES[mol_prop]['max']}."))
+                    MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']:
+                    raise ValidationError(_(f"Invalid target value entered for the property. The value must be between {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']} and {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max']}."))
             
             else:
                 # CASE 2: Range
@@ -81,15 +89,15 @@ class FormQueryProperty(forms.ModelForm):
                 if max_val < min_val:
                     raise ValidationError("Invalid Value Range. Range must be defined as start_val-end_val where start_val < end_val.")
 
-                if MOLECULE_PROPERTIES[mol_prop]['max'] < \
+                if MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max'] < \
                     min_val < \
-                    MOLECULE_PROPERTIES[mol_prop]['min']:
-                    raise ValidationError(_(f"Invalid minimum value entered for the property. The value must be between {MOLECULE_PROPERTIES[mol_prop]['min']} and {MOLECULE_PROPERTIES[mol_prop]['max']}."))
+                    MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']:
+                    raise ValidationError(_(f"Invalid minimum value entered for the property. The value must be between {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']} and {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max']}."))
 
-                if MOLECULE_PROPERTIES[mol_prop]['max'] < \
+                if MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max'] < \
                     max_val < \
-                    MOLECULE_PROPERTIES[mol_prop]['min']:
-                    raise ValidationError(_(f"Invalid maximum value entered for the property. The value must be between {MOLECULE_PROPERTIES[mol_prop]['min']} and {MOLECULE_PROPERTIES[mol_prop]['max']}."))
+                    MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']:
+                    raise ValidationError(_(f"Invalid maximum value entered for the property. The value must be between {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['min']} and {MOLECULE_PROPERTY_CONSTRAINTS[mol_prop]['max']}."))
                 
                 mol_prop_val_range = f"{min_val} - {max_val}"
 
@@ -97,14 +105,17 @@ class FormQueryProperty(forms.ModelForm):
 
 
     def clean_Sorting_mode(self):
-        if (self.cleaned_data['Sorting_mode'] == "") or (self.cleaned_data['Sorting_mode'] is None):
-            mode = NO_SORT
-        else:
-            mode = int(self.cleaned_data['Sorting_mode'])    # choice actual value
+        # if (self.cleaned_data['Sorting_mode'] == "") or (self.cleaned_data['Sorting_mode'] is None):
+        #     mode = NO_SORT
+        # else:
+        #     mode = int(self.cleaned_data['Sorting_mode'])    # choice actual value
         
-        print(f"Sorting mode = {mode}")
+        # print(f"Sorting mode = {mode}")
 
-        return mode
+        # return mode
+
+        print("Sorting mode:", self.cleaned_data["Sorting_mode"])
+        return self.cleaned_data["Sorting_mode"]
     
 
     def save(self, commit=True):

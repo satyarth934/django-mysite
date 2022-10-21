@@ -47,10 +47,12 @@
     </tr>
 
     <tr>
-        <!-- <td> {{ smiles_form.notes.label }} </td> -->
-        <td> {{ smiles_form.Q_notes.label }} </td>
-        <!-- <td colspan="5"> {{ smiles_form.notes }} </td> -->
-        <td colspan="5"> {{ smiles_form.Q_notes }} </td>
+        <td id="comment_label" style="vertical-align: top;"> 
+            {{ smiles_form.Q_notes.label }} &#x25BC;
+        </td>
+        <td id="comment_entry" style="display: none;" colspan="5">
+            {{ smiles_form.Q_notes }}
+        </td>
     </tr>
 
     <tr>
@@ -59,6 +61,22 @@
         </td>
     </tr>
 </table>
+
+
+<!-- Script: example of toggling the comment field - we may want to change the label to say "add comment" and potentially make it a <button> tag, icon, or something obviously clickable -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript">
+    $("#comment_label").click(
+        function () {
+            $("#comment_entry").toggle();
+
+            if ($("#comment_entry").is(":visible")){
+                $("#comment_label").text("Notes \u25B2");    // Upward arrow
+            } else {
+                $("#comment_label").text("Notes \u25BC");    // Downward arrow
+            }
+        });
+</script>
 
 
 <!-- Script: SMILES String Canvas Draw -->
@@ -94,8 +112,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     function isNum(val) {
-        // TODO Look into this. Might break.
-        return !isNaN(val);
+        return $.isNumeric(val);    // Better solution
+        // return !isNaN(val);    // Not the best solution
     }
 
     function validate() {
@@ -110,7 +128,7 @@
             sorting_mode_elem.removeAttribute('disabled');
         }
         else {
-            sorting_mode_elem.value = 2;
+            sorting_mode_elem.value = 0;
             sorting_mode_elem.setAttribute('disabled', '');
         }
     }
