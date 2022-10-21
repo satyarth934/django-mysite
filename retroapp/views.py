@@ -129,6 +129,7 @@ def search(request):
                 logger.info(form.cleaned_data)
 
                 form_to_db = form.save(commit=False)
+                form_to_db.Sorting_mode = form.cleaned_data["Sorting_mode"] if form.cleaned_data["Sorting_mode"] else constants.SORT_OPTIONS.ASCENDING
                 if vutils.isrange(form.cleaned_data["property_value_range"]):
                     min_val, max_val = form.cleaned_data['property_value_range'].split(" - ")
                     form_to_db.Min_value = float(min_val)
@@ -144,7 +145,7 @@ def search(request):
         else:
             logger.error("[INVALID] property_Formset!!")
             logger.info(property_formset.errors)
-        
+
         # return render(request, "formsetapp/index.html", {})
         if smiles_form.is_valid() and property_formset.is_valid():
             request.session['_form_state'] = request.POST
