@@ -224,8 +224,6 @@ def pks_search_result_sfapi(request):
 #     The results will no longer directly be available.
 #     The user will be notified that the query request has been submitted. 
 #     The query status and the results can be checked on the `History` webpage.
-
-#     # TODO: Implement the above. work on sfapi-integration branch.
 #     """
     
 #     if ("_search_query_smiles" in request.session) and ("_search_query_properties" in request.session):
@@ -401,9 +399,9 @@ class QueryHistoryView(TemplateView):
         query_db_completed = QueryDB.objects.filter(Q_Status="COMPLETED")
         print("query_db_completed.count() = ", query_db_completed.count())
 
-        # if property_predictor_obj is None:
-        #     property_predictor_obj = vutils.get_PropertyPredictor_obj()
-        # property_predictor_obj.open_session()
+        if property_predictor_obj is None:
+            property_predictor_obj = vutils.get_PropertyPredictor_obj()
+        property_predictor_obj.open_session()
 
         for cquery_i in query_db_completed:
             # Continue if the query already has results in the database
@@ -412,11 +410,11 @@ class QueryHistoryView(TemplateView):
             
             # Get results from the SFAPI
             # TODO: Test on Spin NERSC.
-            # pp_qresults = property_predictor_obj.get_query_results(cquery_i.Q_Job_id)
-            pp_qresults = {
-                "CN": [vutils.predict_property_api("CN") for _ in range(100)],
-                "MP": [vutils.predict_property_api("MP") for _ in range(100)],
-            }
+            pp_qresults = property_predictor_obj.get_query_results(cquery_i.Q_Job_id)
+            # pp_qresults = {
+            #     "CN": [vutils.predict_property_api("CN") for _ in range(100)],
+            #     "MP": [vutils.predict_property_api("MP") for _ in range(100)],
+            # }    # DELETE
 
             # Update database
             existing_qres_db = QueryResultsDB.objects.filter(Q_uuid_id=cquery_i.Q_uuid)
@@ -451,22 +449,22 @@ class QueryHistoryView(TemplateView):
             # Exclude all the rows that do not have a Q_Job_id or have 'COMPLETED' or 'FAILED' Q_Status.
             query_db_unfinished = QueryDB.objects.exclude(Q_Status__in=["COMPLETED", "FAILED"]).exclude(Q_Job_id="")
 
-            # DELETE
-            def get_dummy_status(del_jobid):
-                if del_jobid=="-1":
-                    return "NEG"
-                elif del_jobid=="":
-                    return "EMPTY"
-                else:
-                    return "COMPLETED"
+            # # DELETE
+            # def get_dummy_status(del_jobid):
+            #     if del_jobid=="-1":
+            #         return "NEG"
+            #     elif del_jobid=="":
+            #         return "EMPTY"
+            #     else:
+            #         return "COMPLETED"
             
             # Open PropertyPredictor session to fetch status
-            # pp = vutils.get_PropertyPredictor_obj()
-            # pp.open_session()
-            pp = None    # DELETE
+            pp = vutils.get_PropertyPredictor_obj()
+            pp.open_session()
+            # pp = None    # DELETE
             for query_i in query_db_unfinished:
-                # query_i.Q_Status = pp.job_status(query_i.Q_Job_id)
-                query_i.Q_Status = get_dummy_status(query_i.Q_Job_id)    # DELETE
+                query_i.Q_Status = pp.job_status(query_i.Q_Job_id)
+                # query_i.Q_Status = get_dummy_status(query_i.Q_Job_id)    # DELETE
                 query_i.save()     # Writing updated value to DB
             
             # Update QueryResultsDB if status is COMPLETED
@@ -535,8 +533,16 @@ class QueryHistoryResultView(TemplateView):
 
     template_name = "retroapp/history_result.html"
 
-    # TODO: Implement this part of applying user defined query constraints to the results.
-    def _query_user_constraints(self, db_object):
+    def _query_user_constraints(self, db_object) -> pd.DataFrame:
+        """Queries all the user defined constraints on the results received from the property prediction.
+
+        Args:
+            db_object (QuerySet): The results from the property prediction being fetched directly from the database.
+
+        Returns:
+            pd.DataFrame: Resulting DataFrame after applying all the filters and sorting specified by the user in the query.
+        """
+
         # get all the constraints
         query_uuid = self.request.GET['name']    # will have to fetch constraints using this UUID
         
