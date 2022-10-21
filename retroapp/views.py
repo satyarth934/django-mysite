@@ -569,6 +569,7 @@ class QueryHistoryResultView(TemplateView):
         
         db_obj_df = pd.DataFrame(db_object_temp.values())
 
+        # This case occurs when the properties have not yet been estimated so the filtering is done against None value which results in 0 resulting rows. Can be changed as per requirement. Currently leaving it as blank rows for incomplete query jobs.
         if len(db_obj_df) == 0:
             return db_obj_df
 
