@@ -193,6 +193,7 @@ def pks_search_result_sfapi(request):
         )
         job_id, status = vutils.sfapi_call(
             smiles_list=retro_output_df["SMILES"],
+            properties=mol_properties,
             update_query_uuid=uuid.UUID(search_query["q_uuid"]),
         )
         logger.info("Submitted the query job!")

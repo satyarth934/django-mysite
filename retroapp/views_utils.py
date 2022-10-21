@@ -152,13 +152,15 @@ def get_PropertyPredictor_obj():
 @utils.log_function
 def sfapi_call(
     smiles_list: List[str],
+    properties: Union[str, List]=None,
     update_query_uuid: Union[str, uuid.UUID]=None,
 ) -> Tuple:
     """The properties are currently being estimated using GraphDot. This might change in the future.
 
     Args:
         smiles_list (List[str]): List of SMILES strings.
-        update_db (bool): 
+        properties (Union[str, List], optional): List of properties which are to be estimated using GraphDot. Defaults to None.
+        update_query_uuid (bool): Query UUID against which the results are to be stored. Defaults to None.
 
     Returns:
         Tuple: A tuple of job id and the submitted job status.
@@ -166,6 +168,13 @@ def sfapi_call(
 
     if not isinstance(smiles_list, list):
         smiles_list = list(smiles_list)
+
+    if properties is not None:    # Convert to a list if properties is not None
+        properties = [properties] if isinstance(properties, str) else properties
+        
+    else:
+        properties = []
+        logger.warn(f"No properties mentioned.")
 
     # TODO: Make SFAPI call here. 
     pp = get_PropertyPredictor_obj()
