@@ -166,16 +166,16 @@ def sfapi_call(
     if not isinstance(smiles_list, list):
         smiles_list = list(smiles_list)
 
-    # # TODO: Make SFAPI call here. 
-    # pp = get_PropertyPredictor_obj()
-    # pp.open_session()
-    # props = {property: None for property in properties}
-    # job_id = pp.submit_query(smiles_list, props)
-    # status = pp.job_status(job_id)
+    # TODO: Make SFAPI call here. 
+    pp = get_PropertyPredictor_obj()
+    pp.open_session()
+    props = {property: None for property in properties}
+    job_id = pp.submit_query(smiles_list, props)
+    status = pp.job_status(job_id)
 
-    # TODO: DELETE these dummy values and use the above code.
-    job_id = 12345
-    status = "PENDING"
+    # # TODO: DELETE these dummy values and use the above code.
+    # job_id = 12345
+    # status = "PENDING"
 
     if update_query_uuid is not None:
         if isinstance(update_query_uuid, str):
