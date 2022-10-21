@@ -110,6 +110,7 @@ def retrotide_call_new(
 
 
 # TODO: Test on Spin NERSC
+@utils.log_function
 def get_PropertyPredictor_obj():
     debug = 0 # produces minimal output
     # debug = 1 # produces more output
@@ -141,7 +142,7 @@ def get_PropertyPredictor_obj():
     # Check if PropertyPredictor was initialized correctly.
     pp.open_session()
     status = pp.check_status()
-    logger.log(f"System: {system}, status: {status}")
+    logger.info(msg=f"System: {system}, status: {status}")
     if status=='unavailable':
         raise Exception(f"Target system: {system} status='unavailable', exiting")
 
