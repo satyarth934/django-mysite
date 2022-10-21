@@ -448,7 +448,7 @@ class QueryHistoryView(TemplateView):
         if self.request.user.is_authenticated:
             # Update QueryDB status for each query entry.
             # Exclude all the rows that do not have a Q_Job_id or have 'COMPLETED' or 'FAILED' Q_Status.
-            query_db_unfinished = QueryDB.objects.exclude(Q_Status__in=["COMPLETED", "FAILED"]).exclude(Q_Job_id="")
+            query_db_unfinished = QueryDB.objects.exclude(Q_Status__in=["COMPLETED", "FAILED"]).exclude(Q_Job_id="").exclude(Q_Job_id__isnull=True)
 
             # # DELETE
             # def get_dummy_status(del_jobid):
@@ -567,6 +567,9 @@ class QueryHistoryResultView(TemplateView):
                 })
         
         db_obj_df = pd.DataFrame(db_object_temp.values())
+
+        if len(db_obj_df) == 0:
+            return db_obj_df
 
         # Get all properties and their corresponding sorting modes (bool value)
         sorting_cols = list()
