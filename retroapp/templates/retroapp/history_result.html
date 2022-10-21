@@ -39,7 +39,7 @@
                     <th>M2_receptor_pKd Mode</th>
                 </tr>
                 
-                {% for query in query_res_object %}
+                {% for query in query_res_object.itertuples %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ query.SMILES }}</td>

@@ -32,7 +32,7 @@
             <table class="searchBtn">
                 <tr>
                     <td>
-                        <input class="submitBtn" type="submit" value="Submit">
+                        <input class="submitBtn" type="submit" value="Submit" id="id_submit">
                     </td>
                 </tr>
             </table>            
@@ -43,4 +43,22 @@
         </iframe>
         
     </body>
+
+    <!-- Disable submit button for 3 seconds after a click -->
+    <script type="text/javascript">
+        $(function () {
+            $("#id_submit").attr("disabled", false);
+            
+            console.log("Before submit")
+            $("#id_form").submit(function () {
+                $("#id_submit").attr("disabled", true).val("Please wait...");
+                
+                setTimeout(() => {
+                    $("#id_submit").attr("disabled", false).val("Submit");
+                }, 3000);
+
+                return true;
+            });
+        })
+    </script>
 </html>

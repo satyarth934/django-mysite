@@ -1,0 +1,22 @@
+<table style="margin-left:auto;margin-right:auto;">
+    <tr>
+        <td>
+            {{ message }}
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <input type="button" value="Show submitted Queries" name="show_submitted_queries" id="id_show_submitted_queries">
+        </td>
+    </tr>
+</table>
+
+<!-- Script to open the history page after the query has been submitted. -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#id_show_submitted_queries").click(function (event) {
+            window.open("history", "_top");
+        });
+    });
+</script>

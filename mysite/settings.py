@@ -127,7 +127,8 @@ DATABASES = {
         'HOST': db_config['HOST'],
         'PORT': db_config['PORT'],
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            # TODO: confirm that using NO_AUTO_VALUE_ON_ZERO is okay.
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO'"
          }   
     }
 }
