@@ -9,6 +9,7 @@ warnings.formatwarning = utils.warning_format    # Defining a specific format to
 import logging
 logger = logging.getLogger(f"{__name__}")
 
+import copy
 import numpy as np
 import pandas as pd
 from pprint import pprint
@@ -22,16 +23,12 @@ from django.forms import formset_factory
 from django.views.generic.base import TemplateView
 from django.db import models
 
-from django.conf import settings
-
 from retroapp import constants
-from retroapp.constants import ASCENDING, DESCENDING, NO_SORT, MOLECULE_PROPERTIES, SORTING_OPTIONS
+from retroapp.constants import MOLECULE_PROPERTIES, MOLECULE_PROPERTY_CONSTRAINTS, SORT_OPTIONS
 from retroapp.models import QueryDB, QueryPropertyDB, QueryResultsDB
 from retroapp.forms_2 import FormQuery, FormQueryProperty
 from retroapp import views_utils as vutils
 from retroapp import utils
-
-from backend import prop_sfapi as prop
 
 import retrotide
 from rdkit import Chem
@@ -142,7 +139,7 @@ def search(request):
                 else:
                     pass
                 form_to_db.Q_uuid = Q_uuid_fk
-                form_to_db.save()            
+                form_to_db.save()
 
         else:
             logger.error("[INVALID] property_Formset!!")
@@ -179,9 +176,12 @@ def pks_search_result_sfapi(request):
         logger.info(f"search_query = {search_query}")
 
         # Calling retrotide API
+        # mol_properties = [
+        #     list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
+        #     for d in search_query["properties"]
+        # ]
         mol_properties = [
-            list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
-            for d in search_query["properties"]
+            d["Property_name"] for d in search_query["properties"]
         ]
 
         # Get PKS results from retrotide and submit job using SFAPI for property prediction.
@@ -246,7 +246,7 @@ def pks_search_result_sfapi(request):
 #             list(constants.MOLECULE_PROPERTIES.keys())[d["Property_name"]] 
 #             for d in search_query["properties"]
 #         ]
-#         retro_df = retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
+#         retro_df = vutils.retrotide_call(smiles=search_query["smiles_string"], properties=mol_properties)
         
 #         # Update the dataframe based on min-max ranges of all properties.
 #         for search_query_property in search_query["properties"]:
@@ -366,12 +366,18 @@ class QueryHistoryView(TemplateView):
         # Fetching the first query property for the specified query
         qprop = QueryPropertyDB.objects.filter(Q_uuid_id=query_entry.Q_uuid)
         if qprop is not None:
-            qprop_name = list(constants.MOLECULE_PROPERTIES.keys())[qprop[0].Property_name]
+            # qprop_name = list(constants.MOLECULE_PROPERTIES.keys())[qprop[0].Property_name]
+            qprop_name = constants.MOLECULE_PROPERTIES[qprop[0].Property_name]
         
         # Checking the result table values of the selected query property
         qres = QueryResultsDB.objects.filter(Q_uuid_id=query_entry.Q_uuid)
         qres_vals = qres.values_list(constants.DB_COLUMN_NAMES[qprop_name])
         distinct_qres_vals = qres_vals.distinct()
+
+        # Exception when no results are stored against a query. Logically this shouldn't be happening. Hence returning True to avoid any changes because of this.
+        if distinct_qres_vals.count() <= 0:
+            logging.warning("This should not be happening!!! Ignoring this for now...")
+            return True
 
         # Result does not exist in the database if property values contain None
         if distinct_qres_vals[0][0] is None:
@@ -395,9 +401,9 @@ class QueryHistoryView(TemplateView):
         query_db_completed = QueryDB.objects.filter(Q_Status="COMPLETED")
         print("query_db_completed.count() = ", query_db_completed.count())
 
-        if property_predictor_obj is None:
-            property_predictor_obj = get_PropertyPredictor_obj()
-        property_predictor_obj.open_session()
+        # if property_predictor_obj is None:
+        #     property_predictor_obj = vutils.get_PropertyPredictor_obj()
+        # property_predictor_obj.open_session()
 
         for cquery_i in query_db_completed:
             # Continue if the query already has results in the database
@@ -406,7 +412,11 @@ class QueryHistoryView(TemplateView):
             
             # Get results from the SFAPI
             # TODO: Test on Spin NERSC.
-            pp_qresults = property_predictor_obj.get_query_results(cquery_i.Q_Job_id)
+            # pp_qresults = property_predictor_obj.get_query_results(cquery_i.Q_Job_id)
+            pp_qresults = {
+                "CN": [vutils.predict_property_api("CN") for _ in range(100)],
+                "MP": [vutils.predict_property_api("MP") for _ in range(100)],
+            }
 
             # Update database
             existing_qres_db = QueryResultsDB.objects.filter(Q_uuid_id=cquery_i.Q_uuid)
@@ -415,14 +425,18 @@ class QueryHistoryView(TemplateView):
             for row_i, model_obj in enumerate(existing_qres_db):
                 for pkey, pvalues in pp_qresults.items():
                     property_col_name = constants.DB_COLUMN_NAMES.get(pkey, None)
+
                     if property_col_name:
-                        model_obj.__dict__[property_col_name] = pvalues[row_i]
+                        try:
+                            model_obj.__dict__[property_col_name] = pvalues[row_i]
+                        except Exception as e:
+                            raise f"[ERROR] Unable to update values in the dictionary. {e}"
 
                 update_list.append(model_obj)
                 
             QueryResultsDB.objects.bulk_update(
                 objs=update_list, 
-                fields=list(pp_qresults.keys()),
+                fields=[constants.DB_COLUMN_NAMES[pkey_i] for pkey_i in pp_qresults.keys() if pkey_i in constants.DB_COLUMN_NAMES.keys()],
                 batch_size=100,
             )
 
@@ -444,14 +458,15 @@ class QueryHistoryView(TemplateView):
                 elif del_jobid=="":
                     return "EMPTY"
                 else:
-                    return "IDK"
+                    return "COMPLETED"
             
             # Open PropertyPredictor session to fetch status
-            pp = get_PropertyPredictor_obj()
-            pp.open_session()
+            # pp = vutils.get_PropertyPredictor_obj()
+            # pp.open_session()
+            pp = None    # DELETE
             for query_i in query_db_unfinished:
-                query_i.Q_Status = status = pp.job_status(query_i.Q_Job_id)
-                # query_i.Q_Status = get_dummy_status(query_i.Q_Job_id)
+                # query_i.Q_Status = pp.job_status(query_i.Q_Job_id)
+                query_i.Q_Status = get_dummy_status(query_i.Q_Job_id)    # DELETE
                 query_i.save()     # Writing updated value to DB
             
             # Update QueryResultsDB if status is COMPLETED
@@ -472,8 +487,11 @@ class QueryHistoryView(TemplateView):
 
         # User IS authenticated
         context = super(QueryHistoryView, self).get_context_data(**kwargs)
-        context['MOLECULE_PROPERTIES'] = list(constants.MOLECULE_PROPERTIES.keys())
-        context['SORTING_OPTIONS'] = [s_optn[1] for s_optn in constants.SORTING_OPTIONS]
+
+        # context['MOLECULE_PROPERTIES'] = list(constants.MOLECULE_PROPERTIES.keys())
+        context['MOLECULE_PROPERTIES'] = constants.MOLECULE_PROPERTIES
+        # context['SORTING_OPTIONS'] = [s_optn[1] for s_optn in constants.SORTING_OPTIONS]
+        context['SORTING_OPTIONS'] = constants.SORT_OPTIONS
 
         queries = QueryDB.objects.filter(Username=self.request.user).order_by('-Timestamp')
 
@@ -517,6 +535,79 @@ class QueryHistoryResultView(TemplateView):
 
     template_name = "retroapp/history_result.html"
 
+    # TODO: Implement this part of applying user defined query constraints to the results.
+    def _query_user_constraints(self, db_object):
+        # get all the constraints
+        query_uuid = self.request.GET['name']    # will have to fetch constraints using this UUID
+        
+        query_property_constaints = QueryPropertyDB.objects.filter(Q_uuid_id=query_uuid)
+
+        db_object_temp = copy.copy(db_object)
+
+        # Apply constraints to the database before viewing in the webpage
+        for constraint_i in query_property_constaints:
+            mol_property = constants.MOLECULE_PROPERTIES[constraint_i.Property_name].label
+            mol_property = constants.DB_COLUMN_NAMES[mol_property]
+
+            if constraint_i.Min_value:
+                db_object_temp = db_object_temp.filter(**{
+                    f"{mol_property}__gte": constraint_i.Min_value
+                })
+
+            if constraint_i.Max_value:
+                db_object_temp = db_object_temp.filter(**{
+                    f"{mol_property}__lte": constraint_i.Max_value
+                })
+        
+        db_obj_df = pd.DataFrame(db_object_temp.values())
+
+        # Get all properties and their corresponding sorting modes (bool value)
+        sorting_cols = list()
+        sorting_cols_asc = list()
+        for constraint_i in query_property_constaints:
+            mol_property = constants.MOLECULE_PROPERTIES[constraint_i.Property_name].label
+            mol_property = constants.DB_COLUMN_NAMES[mol_property]
+
+            if constraint_i.Target_value:
+                # Target value is defined (always ascending)
+                sorting_cols.append(mol_property)
+                sorting_cols_asc.append(True)
+            
+            else:    
+                # Either blank or range but not target value
+                # Sorting mode is defined (ascending | descending)
+                if (constraint_i.Sorting_mode in [
+                    constants.SORT_OPTIONS.ASCENDING, 
+                    constants.SORT_OPTIONS.DESCENDING
+                ]):
+                    sorting_cols.append(mol_property)
+                    sorting_cols_asc.append(constraint_i.Sorting_mode == constants.SORT_OPTIONS.ASCENDING)
+        
+        # Get Target values for each property
+        prop_targets = [constraint_i.Target_value for constraint_i in query_property_constaints]
+
+        # function defining the key for sorting
+        def sorting_key(pd_series):
+            idx = sorting_cols.index(pd_series.name)
+            target = prop_targets[idx]
+            if target is None:
+                return pd_series
+            
+            target = [target] * len(pd_series)
+            return np.abs(np.array(target) - pd_series)
+
+        db_obj_df = db_obj_df.sort_values(
+            by=sorting_cols, 
+            ascending=sorting_cols_asc, 
+            key=sorting_key,
+        )
+
+        # To reset the index value to start from 0 again
+        db_obj_df = db_obj_df.reset_index(drop=True)
+
+        return db_obj_df
+
+
     @utils.log_function
     def get_context_data(self, **kwargs):
         # User IS NOT authenticated
@@ -532,7 +623,10 @@ class QueryHistoryResultView(TemplateView):
         context = super(QueryHistoryResultView, self).get_context_data(**kwargs)
 
         query_res_object = QueryResultsDB.objects.filter(Q_uuid_id=self.request.GET['name'])
-        context["query_res_object"] = query_res_object
+
+        query_res_df = self._query_user_constraints(query_res_object)
+
+        context["query_res_object"] = query_res_df
 
         return context
 
@@ -557,7 +651,7 @@ def retrotide_usage(request, smiles, width=243):
 
     # retrotide API call
     # retro_df = retrotideAPI_dummy(request, smiles)
-    retro_df = retrotide_call(smiles=smiles)
+    retro_df = vutils.retrotide_call(smiles=smiles)
 
     context = {
         "query_dict": {"smiles_string": smiles},
@@ -566,108 +660,3 @@ def retrotide_usage(request, smiles, width=243):
         "width": width,
     }
     return render(request, "retroapp/showtable.html", context)
-
-
-########################
-# Dependency functions #
-########################
-
-def predict_property_api(property):
-    """Dummy function call to replicate the molecule property prediction.
-    Returns random values for the query properties requested.
-    """
-
-    warnings.warn(f"Populating {property} with RANDOM values.")    # DELETE
-    return np.random.randint(0,100)
-
-
-# TODO: Test on Spin NERSC
-def get_PropertyPredictor_obj():
-    debug = 0 # produces minimal output
-    # debug = 1 # produces more output
-    # debug = 2 # produces a lot of output
-
-    # client_sys = "spin"
-    target_job = "perl_test"
-    system = "perlmutter"
-
-    # path to where batch job runs
-    if settings.DEBUG:
-        path = "/global/cfs/cdirs/m3513/molinv/rev5"
-    else:
-        path = "/global/cfs/cdirs/m3513/molinv/prod"
-    
-    client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
-    client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key
-    client_env = True
-
-    pp = prop.PropertyPredictor(
-        path, 
-        client_id, 
-        client_pem, 
-        client_env, 
-        target_job, 
-        debug, 
-    )
-
-    # Check if PropertyPredictor was initialized correctly.
-    pp.open_session()
-    status = pp.check_status()
-    logger.log(f"System: {system}, status: {status}")
-    if status=='unavailable':
-        raise Exception(f"Target system: {system} status='unavailable', exiting")
-
-    return pp
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@utils.log_function
-def retrotide_call(smiles, properties=None):
-    """[Deprecated]
-    Retrotide API call.
-
-    Newer version is implemented in `retrotide_call_new`.
-    """
-
-    designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
-
-    if properties is not None:    # Convert to a list if properties is not None
-        properties = [properties] if isinstance(properties, str) else properties
-        
-    else:
-        properties = []
-        logger.warn(f"No properties mentioned.")
-
-    df_dict = defaultdict(list)
-
-    for i in range(len(designs[-1])):
-        df_dict["SMILES"].append(Chem.MolToSmiles(designs[-1][i][2]))
-        df_dict["Retrotide_Similarity_SCORE"].append(designs[-1][i][1])
-        df_dict["DESIGN"].append(designs[-1][i][0].modules)
-        for property in properties:
-            df_dict[property].append(predict_property_api(property=property))
-
-    try:
-        output_df = pd.DataFrame(df_dict)
-    except ValueError as ve:
-        raise ValueError(f"{ve} - Check if multiple constraints are defined for the same Molecular Property.")
-
-    return pd.DataFrame(df_dict)

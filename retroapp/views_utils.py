@@ -10,12 +10,16 @@ warnings.formatwarning = utils.warning_format    # Defining a specific format to
 import logging
 logger = logging.getLogger(f"{__name__}")
 
+import numpy as np
 import pandas as pd
 from collections import defaultdict
 
 import uuid
 from retroapp.models import QueryDB, QueryPropertyDB, QueryResultsDB
 from retroapp import utils
+from django.conf import settings
+
+from backend import prop_sfapi as prop
 
 import retrotide
 from rdkit import Chem
@@ -100,8 +104,48 @@ def retrotide_call_new(
     if insert_into_db:
         insert_data_into_db(data_df=output_df)
         logger.info("Added retrotide PKS Designs into the results database!")
+        print("[BOOKMARK] Updating QueryResultsDB")    # DELETE
 
     return output_df
+
+
+# TODO: Test on Spin NERSC
+def get_PropertyPredictor_obj():
+    debug = 0 # produces minimal output
+    # debug = 1 # produces more output
+    # debug = 2 # produces a lot of output
+
+    # client_sys = "spin"
+    target_job = "perl_test"
+    system = "perlmutter"
+
+    # path to where batch job runs
+    if settings.DEBUG:
+        path = "/global/cfs/cdirs/m3513/molinv/rev5"
+    else:
+        path = "/global/cfs/cdirs/m3513/molinv/prod"
+    
+    client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
+    client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key
+    client_env = True
+
+    pp = prop.PropertyPredictor(
+        path, 
+        client_id, 
+        client_pem, 
+        client_env, 
+        target_job, 
+        debug, 
+    )
+
+    # Check if PropertyPredictor was initialized correctly.
+    pp.open_session()
+    status = pp.check_status()
+    logger.log(f"System: {system}, status: {status}")
+    if status=='unavailable':
+        raise Exception(f"Target system: {system} status='unavailable', exiting")
+
+    return pp
 
 
 @utils.log_function
@@ -122,16 +166,16 @@ def sfapi_call(
     if not isinstance(smiles_list, list):
         smiles_list = list(smiles_list)
 
-    # TODO: Make SFAPI call here. 
-    pp = get_PropertyPredictor_obj()
-    pp.open_session()
-    props = {property: None for property in properties}
-    job_id = pp.submit_query(smiles_list, props)
-    status = pp.job_status(job_id)
+    # # TODO: Make SFAPI call here. 
+    # pp = get_PropertyPredictor_obj()
+    # pp.open_session()
+    # props = {property: None for property in properties}
+    # job_id = pp.submit_query(smiles_list, props)
+    # status = pp.job_status(job_id)
 
-    # # TODO: DELETE these dummy values and use the above code.
-    # job_id = 12345
-    # status = "PENDING"
+    # TODO: DELETE these dummy values and use the above code.
+    job_id = 12345
+    status = "PENDING"
 
     if update_query_uuid is not None:
         if isinstance(update_query_uuid, str):
@@ -147,6 +191,8 @@ def sfapi_call(
         qdb.Q_Status = status  # change Q_Status
         qdb.save() # this will update the row in the QueryDB database
         logger.info("Updated job_id and status in the database!")
+
+        print("[BOOKMARK] Updating QueryDB Job_ID and Status.")    # DELETE
 
     return job_id, status
 
@@ -179,3 +225,59 @@ def clean_sulfur_from_smiles_string(input_smiles, idx=0):
         raise e
 
     return Chem.MolToSmiles(product)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def predict_property_api(property):
+    """[Dummy] # DELETE
+    Dummy function call to replicate the molecule property prediction.
+    Returns random values for the query properties requested.
+    """
+
+    warnings.warn(f"Populating {property} with RANDOM values.")    # DELETE
+    return np.random.randint(0,100)
+
+
+@utils.log_function
+def retrotide_call(smiles, properties=None):
+    """[Deprecated]
+    Retrotide API call.
+
+    Newer version is implemented in `retrotide_call_new`.
+    """
+
+    designs = retrotide.designPKS(Chem.MolFromSmiles(smiles))
+
+    if properties is not None:    # Convert to a list if properties is not None
+        properties = [properties] if isinstance(properties, str) else properties
+        
+    else:
+        properties = []
+        logger.warn(f"No properties mentioned.")
+
+    df_dict = defaultdict(list)
+
+    for i in range(len(designs[-1])):
+        df_dict["SMILES"].append(Chem.MolToSmiles(designs[-1][i][2]))
+        df_dict["Retrotide_Similarity_SCORE"].append(designs[-1][i][1])
+        df_dict["DESIGN"].append(designs[-1][i][0].modules)
+        for property in properties:
+            df_dict[property].append(predict_property_api(property=property))
+
+    try:
+        output_df = pd.DataFrame(df_dict)
+    except ValueError as ve:
+        raise ValueError(f"{ve} - Check if multiple constraints are defined for the same Molecular Property.")
+
+    return pd.DataFrame(df_dict)
