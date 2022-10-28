@@ -195,8 +195,8 @@ class PropertyPredictor:
             job_id = "ERROR"
             if self.debug > 0:
                 print('\nTask ' + task_id + ' failed with error!')
-
-        job_id = result['jobid']
+        else:
+            job_id = result['jobid']
         return job_id
 
     '''Check the job_id status using sfapi for sacct'''

@@ -181,7 +181,10 @@ def sfapi_call(
     pp.open_session()
     props = {property: None for property in properties}
     job_id = pp.submit_query(smiles_list, props)
-    status = pp.job_status(job_id)
+    if job_id == "ERROR":
+        status = "ERROR"
+    else:
+        status = pp.job_status(job_id)
 
     # # TODO: DELETE these dummy values and use the above code.
     # job_id = 12345
