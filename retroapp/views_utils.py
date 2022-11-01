@@ -26,6 +26,27 @@ from rdkit import Chem
 
 
 @utils.log_function
+def is_user_authenticated(request):
+    """Checks if the user is authenticated using the google oauth API and also checks if the user is from the WHITELISTED domains.
+
+    Args:
+        request (django.http.request): request object
+
+    Returns:
+        bool: True if the user is authenticated and from the accepted domain, False otherwise.
+    """
+    login_authentication = request.user.is_authenticated
+
+    if not login_authentication:
+        return login_authentication
+
+    user_email = request.user.socialaccount_set.all()[0].extra_data['email']
+    domain_authentication = user_email.split("@")[-1] in settings.SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS
+
+    return (login_authentication and domain_authentication)
+
+
+@utils.log_function
 def insert_data_into_db(data_df: pd.DataFrame) -> None:
     """This function is used to insert the retrotide output to the results table (QueryResultsDB). The property values are predicted after this insertion.
 
@@ -249,8 +270,9 @@ def clean_sulfur_from_smiles_string(input_smiles, idx=0):
 
 
 
-
-
+##########################
+# DELETE THESE FUNCTIONS #
+##########################
 
 def predict_property_api(property):
     """[Dummy] # DELETE
