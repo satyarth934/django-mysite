@@ -124,13 +124,11 @@ def retrotide_call_new(
     
     if insert_into_db:
         insert_data_into_db(data_df=output_df)
-        logger.info("Added retrotide PKS Designs into the results database!")
-        print("[BOOKMARK] Updating QueryResultsDB")    # DELETE
+        logger.info("[DB UPDATE] Added retrotide PKS Designs into the results database!")
 
     return output_df
 
 
-# TODO: Test on Spin NERSC
 @utils.log_function
 def get_PropertyPredictor_obj():
     debug = 0 # produces minimal output
@@ -224,9 +222,7 @@ def sfapi_call(
         qdb.Q_Job_id = job_id  # change Q_Job_id
         qdb.Q_Status = status  # change Q_Status
         qdb.save() # this will update the row in the QueryDB database
-        logger.info("Updated job_id and status in the database!")
-
-        print("[BOOKMARK] Updating QueryDB Job_ID and Status.")    # DELETE
+        logger.info("[DB UPDATE] Updated job_id and status in the database!")
 
     return job_id, status
 
