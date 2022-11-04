@@ -493,6 +493,7 @@ class QueryHistoryView(TemplateView):
 
         # User IS authenticated
         context = super(QueryHistoryView, self).get_context_data(**kwargs)
+        context.update({"user_is_authenticated": True})
 
         # context['MOLECULE_PROPERTIES'] = list(constants.MOLECULE_PROPERTIES.keys())
         context['MOLECULE_PROPERTIES'] = constants.MOLECULE_PROPERTIES
@@ -641,6 +642,7 @@ class QueryHistoryResultView(TemplateView):
 
         # User IS authenticated
         context = super(QueryHistoryResultView, self).get_context_data(**kwargs)
+        context.update({"user_is_authenticated": True})
 
         query_res_object = QueryResultsDB.objects.filter(Q_uuid_id=self.request.GET['name'])
 
