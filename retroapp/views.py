@@ -49,7 +49,9 @@ def home(request):
     """View function for home URL.
     """
     template = loader.get_template("retroapp/home.html")
-    context = {}
+    context = {
+        "user_is_authenticated": vutils.is_user_authenticated(request),
+    }
     rendered_str = template.render(context, request)
     return HttpResponse(rendered_str)
 
@@ -67,7 +69,8 @@ def search(request):
     #####################################################################
     # When user is NOT logged in. 
     #####################################################################
-    if not request.user.is_authenticated:
+    # if not request.user.is_authenticated:
+    if not vutils.is_user_authenticated(request):
         context = {
             "message": "Please login to use the Search functionality!!",
             "message_tag": "ERROR",
@@ -446,7 +449,8 @@ class QueryHistoryView(TemplateView):
         super().setup(request, *args, **kwargs)
 
         # Update Databases only if the user is authenticated.
-        if self.request.user.is_authenticated:
+        # if self.request.user.is_authenticated:
+        if vutils.is_user_authenticated(self.request):
             # Update QueryDB status for each query entry.
             # Exclude all the rows that do not have a Q_Job_id or have 'COMPLETED' or 'FAILED' Q_Status.
             query_db_unfinished = QueryDB.objects.exclude(Q_Status__in=["COMPLETED", "FAILED"]).exclude(Q_Job_id="").exclude(Q_Job_id__isnull=True)
@@ -477,8 +481,10 @@ class QueryHistoryView(TemplateView):
     @utils.log_function
     def get_context_data(self, **kwargs):
         # User IS NOT authenticated
-        if not self.request.user.is_authenticated:
+        # if not self.request.user.is_authenticated:
+        if not vutils.is_user_authenticated(self.request):
             context = {
+                "user_is_authenticated": False,
                 "message": "Please login to view your past queries!!",
                 "message_tag": "ERROR",
                 # "remove_tabs": True,
@@ -487,6 +493,7 @@ class QueryHistoryView(TemplateView):
 
         # User IS authenticated
         context = super(QueryHistoryView, self).get_context_data(**kwargs)
+        context.update({"user_is_authenticated": True})
 
         # context['MOLECULE_PROPERTIES'] = list(constants.MOLECULE_PROPERTIES.keys())
         context['MOLECULE_PROPERTIES'] = constants.MOLECULE_PROPERTIES
@@ -623,8 +630,10 @@ class QueryHistoryResultView(TemplateView):
     @utils.log_function
     def get_context_data(self, **kwargs):
         # User IS NOT authenticated
-        if not self.request.user.is_authenticated:
+        # if not self.request.user.is_authenticated:
+        if not vutils.is_user_authenticated(self.request):
             context = {
+                "user_is_authenticated": False,
                 "message": "Please login to view your past queries!!",
                 "message_tag": "ERROR",
                 # "remove_tabs": True,
@@ -633,6 +642,7 @@ class QueryHistoryResultView(TemplateView):
 
         # User IS authenticated
         context = super(QueryHistoryResultView, self).get_context_data(**kwargs)
+        context.update({"user_is_authenticated": True})
 
         query_res_object = QueryResultsDB.objects.filter(Q_uuid_id=self.request.GET['name'])
 
@@ -658,7 +668,11 @@ def about(request):
 # View function for smilesstr URL
 @utils.log_function
 def retrotide_usage(request, smiles, width=243):
-    """Django wrapper for using retrotide API.
+    """[Deprecated]
+    Django wrapper for using retrotide API.
+
+    To be used only for viewing the rendered molecule 
+    from a SMILES string and nothing more.
     """
 
     # retrotide API call

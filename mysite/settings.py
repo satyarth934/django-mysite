@@ -239,6 +239,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = ['lbl.gov', 'nersc.gov']
+
 # Login site redirect
 if os.environ.get('DJANGO_SITE_ID') is None:
     SITE_ID = 0

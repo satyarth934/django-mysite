@@ -1,9 +1,18 @@
 import time
 import logging
 import functools
+from typing import Callable
 
 
-def log_function(function):
+def log_function(function: Callable):
+    """Function decorator to log the function call.
+
+    Args:
+        function (Callable): function on which the decorator is being used.
+
+    Returns:
+        Callable: decorated function.
+    """
     func_name = function.__name__
     logger = logging.getLogger()
 
