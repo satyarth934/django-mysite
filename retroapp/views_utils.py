@@ -140,10 +140,8 @@ def get_PropertyPredictor_obj():
     system = "perlmutter"
 
     # path to where batch job runs
-    if settings.DEBUG:
-        path = "/global/cfs/cdirs/m3513/molinv/rev5"
-    else:
-        path = "/global/cfs/cdirs/m3513/molinv/prod"
+    # path = "/global/cfs/cdirs/m3513/molinv/rev5"
+    path = "/global/cfs/cdirs/m3513/molinv/prod"
     
     client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
     client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key

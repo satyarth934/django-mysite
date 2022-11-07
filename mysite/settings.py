@@ -40,7 +40,7 @@ ALLOWED_HOSTS = [
     'biomoleculararchitect.lbl.gov',
     'molinv.molinv.development.svc.spin.nersc.org',
     '127.0.0.1', 
-    'localhost',
+    'localhost', 
     'molinv.molinv.128.55.206.100.sslip.io',
 ]
 
