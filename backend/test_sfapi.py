@@ -17,7 +17,7 @@ debug = 2 # produces a lot of output
 
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 # Output start time
@@ -55,9 +55,9 @@ pp.open_session()
 # Check the status of the target machine
 # TODO - check return code?
 status = pp.check_status()
-logging.info("System: "+system+", status: "+status)
+logger.info("System: "+system+", status: "+status)
 if status=='unavailable':
-    logging.info("Target system: "+system+" status='unavailable', exiting")
+    logger.info("Target system: "+system+" status='unavailable', exiting")
     quit()
 
 # Prepare the test input
@@ -74,19 +74,19 @@ job_id = pp.submit_query(smiles, props)
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
-logging.info("  Time " + current_time)
-logging.info("Job ID: " + job_id)
+logger.info("  Time " + current_time)
+logger.info("Job ID: " + job_id)
 
 # Poll on the job status - simulate a user clicking "refresh" every 2 sec
-logging.info("\nPolling every 15 sec until job completes ...")
+logger.info("\nPolling every 15 sec until job completes ...")
 while True:
     status = pp.job_status(job_id)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    logging.info("  Time " + current_time + ": " + status)
+    logger.info("  Time " + current_time + ": " + status)
     if debug > 0:
         squeue_status = pp.job_status_squeue(job_id)
-        logging.info("    Job status: squeue "+squeue_status+", sacct "+status)
+        logger.info("    Job status: squeue "+squeue_status+", sacct "+status)
     if status=='COMPLETED':
         break
     elif status=='FAILED':
@@ -94,16 +94,16 @@ while True:
     else:
         time.sleep(15)
 
-logging.info("\nJob ID: " + job_id + " status : " + status)
+logger.info("\nJob ID: " + job_id + " status : " + status)
 
 # Process the job output file with the query results
 if status=='COMPLETED' or status=='FAILED':
     result = pp.get_query_results(job_id)
-    logging.info("Job ID: " + job_id + " output:")
-    logging.info(result)
+    logger.info("Job ID: " + job_id + " output:")
+    logger.info(result)
 
 # Output the end time
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
-logging.info("Ending test: " + current_time)
+logger.info("Ending test: " + current_time)
 
