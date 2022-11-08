@@ -6,17 +6,26 @@
 import prop_sfapi as prop
 import time
 from datetime import datetime
+import logging
 
-# Output start time
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")
-print("Starting test: " + current_time)
+# Create console handler
+logger = logging.getLogger('test_sfapi')
 
-# Create the PropertyPredictor for client running on cori
 # debug = 1 # produces more output
 debug = 2 # produces a lot of output
 # debug = 0 # produces minimal output
 
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
+
+# Output start time
+now = datetime.now()
+current_time = now.strftime("%H:%M:%S")
+logger.info("Starting test: " + current_time)
+
+# Create the PropertyPredictor for client running on cori
 # 1. Choose one of these for where the client is running (for correct keys)
 # client_sys = "spin"
 # client_sys = "cori"
@@ -37,9 +46,7 @@ client_pem = "BIOARC_PERL_PEM" # this environment variable = private PEM key
 client_env = True
 pp = prop.PropertyPredictor(path, client_id, client_pem, client_env, \
         target_job, debug)
-
-if debug > 0:
-    print(pp)
+logger.info('Writing out pp: %s', pp)
 
 # Open an SF API session - stays open until this is GC'ed
 # TODO - check return code?
@@ -48,9 +55,9 @@ pp.open_session()
 # Check the status of the target machine
 # TODO - check return code?
 status = pp.check_status()
-print("System: "+system+", status: "+status)
+logger.info("System: "+system+", status: "+status)
 if status=='unavailable':
-    print("Target system: "+system+" status='unavailable', exiting")
+    logger.info("Target system: "+system+" status='unavailable', exiting")
     quit()
 
 # Prepare the test input
@@ -67,19 +74,19 @@ job_id = pp.submit_query(smiles, props)
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
-print("  Time " + current_time)
-print("Job ID: " + job_id)
+logger.info("  Time " + current_time)
+logger.info("Job ID: " + job_id)
 
 # Poll on the job status - simulate a user clicking "refresh" every 2 sec
-print("\nPolling every 15 sec until job completes ...")
+logger.info("\nPolling every 15 sec until job completes ...")
 while True:
     status = pp.job_status(job_id)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    print("  Time " + current_time + ": " + status)
+    logger.info("  Time " + current_time + ": " + status)
     if debug > 0:
         squeue_status = pp.job_status_squeue(job_id)
-        print("    Job status: squeue "+squeue_status+", sacct "+status)
+        logger.info("    Job status: squeue "+squeue_status+", sacct "+status)
     if status=='COMPLETED':
         break
     elif status=='FAILED':
@@ -87,17 +94,16 @@ while True:
     else:
         time.sleep(15)
 
-print("\nJob ID: " + job_id + " status : " + status)
+logger.info("\nJob ID: " + job_id + " status : " + status)
 
 # Process the job output file with the query results
 if status=='COMPLETED' or status=='FAILED':
     result = pp.get_query_results(job_id)
-    if debug > 0:
-        print("Job ID: " + job_id + " output:")
-    print(result)
+    logger.info("Job ID: " + job_id + " output:")
+    logger.info(result)
 
 # Output the end time
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
-print("Ending test: " + current_time)
+logger.info("Ending test: " + current_time)
 

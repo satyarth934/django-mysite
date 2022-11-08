@@ -17,6 +17,7 @@ from pathlib import Path
 import requests
 import time 
 from datetime import datetime
+import logging
 
 class PropertyPredictor:
 
@@ -34,7 +35,13 @@ class PropertyPredictor:
         self.token_url = "https://oidc.nersc.gov/c2id/token"
         self.sfapi_url = "https://api.nersc.gov/api/v1.2"
         self.poll_sec = 2
-        self.debug = debug
+        self.logger = logging.getLogger('PropertyPredictor')
+        self.logger.setLevel(logging.WARNING)
+        if debug==1:
+            self.logger.setLevel(logging.INFO)
+        elif debug==2:
+            self.logger.setLevel(logging.DEBUG)
+
         # (ignore) client_sys - 'cori', 'perl', or 'spin' (where client is running from)
         # Setup for where the client is calling from
         # if client_sys == "cori": # Cori login nodes
@@ -65,8 +72,7 @@ class PropertyPredictor:
 
         if len(path)==0:
             raise Exception("Empty path to job project? Required arg!")
-        if debug > 0:
-            print("\n Using job path: " + path) 
+        self.logger.info("\n Using job path: " + path) 
         self.path = path
 
         # Check that the environment variables exists and has non-zero len
@@ -77,7 +83,7 @@ class PropertyPredictor:
             raise Exception("Empty SFAPI client id empty: " + \
                     client_id_env)
         self.client_id = client_id
-        print("Client id:\n"+self.client_id+"\n")
+        self.logger.debug("Client id:\n"+self.client_id+"\n")
         if client_env:
             client_pem_env = client_pem
             client_pem = os.getenv(client_pem_env)
@@ -85,7 +91,7 @@ class PropertyPredictor:
             raise Exception("Empty SFAPI client PEM empty: " + \
                     client_pem_env)
         self.client_pem = client_pem
-        print("Client PEM:\n"+self.client_pem+"\n")
+        self.logger.debug("Client PEM:\n"+self.client_pem+"\n")
 
     def __str__(self):
         vals = dict()
@@ -95,7 +101,6 @@ class PropertyPredictor:
         vals['target_sys'] = self.target_sys
         vals['test'] = self.test
         vals['client_id'] = self.client_id
-        vals['debug'] = self.debug
         return str(vals) 
 
     # def __del__(self):
@@ -111,32 +116,26 @@ class PropertyPredictor:
             PrivateKeyJWT(self.token_url), grant_type="client_credentials",
             token_endpoint=self.token_url)
         self.session.fetch_token()
-        if self.debug > 0:
-            print('Got SFAPI access token!')
-        if self.debug > 1:
-            print(self.session.token['access_token'])
+        self.logger.info('Got SFAPI access token!')
+        self.logger.debug(self.session.token['access_token'])
 
     '''Check the target system status
     Return value: string - 'unavailable' or 'available'
     '''
     def check_status(self):
-        if self.debug > 0:
-            print('\nSystem status API call:')
+        self.logger.info('\nSystem status API call:')
         url = self.sfapi_url+"/status/"+self.target_sys
         retval = self.session.get(url)
-        if self.debug > 0:
-            print(retval.json())
+        self.logger.debug(retval.json())
         status = retval.json()['status']
         return status
 
     def submit_query(self, smiles, props):
-        if self.debug:
-            print('\nSubmit job API call:')
+        self.logger.debug('\nSubmit job API call:')
         mols_string = "\"" + str(smiles) + "\""
         props_string = "\"" + str(props) + "\""
-        if self.debug > 0:
-            print("Molecule list :" + mols_string)
-            print("Property dict :" + props_string)
+        self.logger.debug("Molecule list :" + mols_string)
+        self.logger.debug("Property dict :" + props_string)
 
         # run - different commands to run: test stubs or real thing
         # header - different batch parameters and module loads
@@ -156,28 +155,24 @@ class PropertyPredictor:
 
         # Build up the submit script as a string
         submit_script = header+command+" "+mols_string+" "+props_string
-        if self.debug > 1:
-            print("Submit script")
-            print(submit_script)
+        self.logger.debug("Submit script")
+        self.logger.debug(submit_script)
         url = self.sfapi_url+"/compute/jobs/"+self.target_sys
         retval = self.session.post(url,
                 data = {"job": submit_script, "isPath": False})
-        if self.debug > 1:
-            print(retval.json())
+        self.logger.debug(retval.json())
 
         # Get the SFAPI task id, wait for it to return a job id
         task_id = retval.json()['task_id']
-        if self.debug > 0:
-            print('\nTask ' + task_id + ' status API call:')
+        self.logger.info('\nTask ' + task_id + ' status API call:')
         url = self.sfapi_url+"/tasks/"+task_id
         while True:
             r = self.session.get(url)
             status = r.json()['status']
             now = datetime.now()
-            if self.debug > 0:
-                current_time = now.strftime("%H:%M:%S")
-                print('    ' + current_time + ': ' + status)
-                print(r.json())
+            current_time = now.strftime("%H:%M:%S")
+            self.logger.info('    ' + current_time + ': ' + status)
+            self.logger.debug(r.json())
             if status != 'new':
                 break
             else:
@@ -187,54 +182,45 @@ class PropertyPredictor:
 
         # Get the job id and return it
         resultstr = r.json()['result']
-        if self.debug > 1:
-            print(resultstr)
+        self.logger.debug(resultstr)
         resultstr = resultstr.replace('null','None')
         result = eval(resultstr)
         if result['error']!=None:
             job_id = "ERROR"
-            if self.debug > 0:
-                print('\nTask ' + task_id + ' failed with error!')
+            self.logger.warning('\nTask ' + task_id + ' failed with error!')
+        else:
+            job_id = result['jobid']
 
-        job_id = result['jobid']
         return job_id
 
     '''Check the job_id status using sfapi for sacct'''
     def job_status(self, job_id):
         retval = dict()
-        if self.debug > 0:
-            print('\nSacct job ' + job_id + ' status API call:')
+        self.logger.info('\nSacct job ' + job_id + ' status API call:')
         url = self.sfapi_url+"/compute/jobs/"+self.target_sys +"/"+job_id+"?sacct=true"
-        if self.debug > 0:
-            print(url)
+        self.logger.info(url)
         result = self.session.get(url)
-        if self.debug > 1:
-            print(result.json())
+        self.logger.debug(result.json())
 
         output = result.json()['output']
         error = result.json()['error']
-        if self.debug > 0: 
-            print("Error : " + str(error))
+        self.logger.warning("Error : " + str(error))
         if error!=None:
             status = "ERROR"
         else:
             status = output[0]['state']
-        if self.debug > 0:
-            print("Status of " + job_id + " : " + status)
+        self.logger.info("Status of " + job_id + " : " + status)
 
         return status
 
     '''Check the job_id status using sfapi for squeue'''
     # NOTE: this will not find jobs that have complet
     def job_status_squeue(self, job_id):
-        if self.debug > 0:
-            print('\nSqueue job ' + job_id + ' status API call:')
+        self.logger.info('\nSqueue job ' + job_id + ' status API call:')
         url = self.sfapi_url+"/compute/jobs/"+self.target_sys+"/"+job_id
-        if self.debug > 0:
-            print(url)
+        self.logger.info(url)
         result = self.session.get(url)
-        if self.debug > 1:
-            print(result.json())
+        self.logger.debug(result.json())
         output = result.json()['output']
         if len(output) > 0:
             status = output[0]['state']
@@ -255,15 +241,12 @@ class PropertyPredictor:
     def get_query_results(self, job_id):
         # filepath = 'global/homes/u/u6336/repos/bioarc/slurm-3280437.out'
         filepath = self.path+"/"+job_id+".log"
-        if self.debug > 0:
-            print('\nDownload file API call:')
-            print(filepath)
+        self.logger.info('\nDownload file API call:')
+        self.logger.info(filepath)
         getcmd = self.sfapi_url+"/utilities/download/"+self.target_sys+"/"+filepath
-        if self.debug > 0:
-            print(getcmd)
+        self.logger.info(getcmd)
         result = self.session.get(getcmd).json()
-        if self.debug > 0:
-            print(result)
+        self.logger.info(result)
         if result['status']=="ERROR":
             return "ERROR"
         contents = result['file']
