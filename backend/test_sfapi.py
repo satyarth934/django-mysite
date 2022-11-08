@@ -27,9 +27,9 @@ logger.info("Starting test: " + current_time)
 
 # Create the PropertyPredictor for client running on cori
 # 1. Choose one of these for where the client is running (for correct keys)
-# client_sys = "spin"
+client_sys = "spin"
 # client_sys = "cori"
-client_sys = "perl"
+# client_sys = "perl"
 # 2. Choose pairs of these to indicate what/where to run
 target_job = "perl" # call real code on Perlmutter GPUs
 system = "perlmutter"
@@ -41,8 +41,8 @@ system = "perlmutter"
 # pp = prop.PropertyPredictor(client_sys, target_sys, debug)
 
 path = "/global/cfs/cdirs/m3513/molinv/prod" # path to where batch job runs
-client_id = "BIOARC_PERL_ID" # this environment variable = SFAPI client id
-client_pem = "BIOARC_PERL_PEM" # this environment variable = private PEM key
+client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
+client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key
 client_env = True
 pp = prop.PropertyPredictor(path, client_id, client_pem, client_env, \
         target_job, debug)

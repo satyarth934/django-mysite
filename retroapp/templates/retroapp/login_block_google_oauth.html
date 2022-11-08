@@ -10,8 +10,8 @@
 <!-- user.socialaccount_set.all.0.extra_data.name: {{ user.socialaccount_set.all.0.extra_data.name }} <br> -->
 <!-- user.socialaccount_set.all.0.extra_data: {{ user.socialaccount_set.all.0.extra_data }} <br> -->
 
-<table class="loginTable" cellspacing="10">
-    {% if user.is_authenticated %}
+<table class="loginTable" cellspacing="10" style="text-align: center;">
+    {% if user_is_authenticated %}
         <tr>
             <td>
                 Welcome, You are logged in as {{ user.username }}
@@ -34,10 +34,15 @@
             </td>
         </tr>
         <tr>
+            <td>
+                Please Log In with your LBL or NERSC ID to continue.
+            </td>
+        </tr>
+        <tr>
             <td align="center">
                 <button>
                     <a href="{% provider_login_url 'google' %}">
-                        Login With Google
+                        Login
                     </a>
                 </button>
             </td>

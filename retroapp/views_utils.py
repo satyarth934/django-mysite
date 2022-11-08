@@ -26,6 +26,27 @@ from rdkit import Chem
 
 
 @utils.log_function
+def is_user_authenticated(request):
+    """Checks if the user is authenticated using the google oauth API and also checks if the user is from the WHITELISTED domains.
+
+    Args:
+        request (django.http.request): request object
+
+    Returns:
+        bool: True if the user is authenticated and from the accepted domain, False otherwise.
+    """
+    login_authentication = request.user.is_authenticated
+
+    if not login_authentication:
+        return login_authentication
+
+    user_email = request.user.socialaccount_set.all()[0].extra_data['email']
+    domain_authentication = user_email.split("@")[-1] in settings.SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS
+
+    return (login_authentication and domain_authentication)
+
+
+@utils.log_function
 def insert_data_into_db(data_df: pd.DataFrame) -> None:
     """This function is used to insert the retrotide output to the results table (QueryResultsDB). The property values are predicted after this insertion.
 
@@ -103,13 +124,11 @@ def retrotide_call_new(
     
     if insert_into_db:
         insert_data_into_db(data_df=output_df)
-        logger.info("Added retrotide PKS Designs into the results database!")
-        print("[BOOKMARK] Updating QueryResultsDB")    # DELETE
+        logger.info("[DB UPDATE] Added retrotide PKS Designs into the results database!")
 
     return output_df
 
 
-# TODO: Test on Spin NERSC
 @utils.log_function
 def get_PropertyPredictor_obj():
     debug = 0 # produces minimal output
@@ -121,10 +140,8 @@ def get_PropertyPredictor_obj():
     system = "perlmutter"
 
     # path to where batch job runs
-    if settings.DEBUG:
-        path = "/global/cfs/cdirs/m3513/molinv/rev5"
-    else:
-        path = "/global/cfs/cdirs/m3513/molinv/prod"
+    # path = "/global/cfs/cdirs/m3513/molinv/rev5"
+    path = "/global/cfs/cdirs/m3513/molinv/prod"
     
     client_id = "BIOARC_SPIN_SFAPI_CLIENT" # this environment variable = SFAPI client id
     client_pem = "BIOARC_SPIN_SFAPI_PEM_KEY" # this environment variable = private PEM key
@@ -181,7 +198,10 @@ def sfapi_call(
     pp.open_session()
     props = {property: None for property in properties}
     job_id = pp.submit_query(smiles_list, props)
-    status = pp.job_status(job_id)
+    if job_id == "ERROR":
+        status = "ERROR"
+    else:
+        status = pp.job_status(job_id)
 
     # # TODO: DELETE these dummy values and use the above code.
     # job_id = 12345
@@ -200,9 +220,7 @@ def sfapi_call(
         qdb.Q_Job_id = job_id  # change Q_Job_id
         qdb.Q_Status = status  # change Q_Status
         qdb.save() # this will update the row in the QueryDB database
-        logger.info("Updated job_id and status in the database!")
-
-        print("[BOOKMARK] Updating QueryDB Job_ID and Status.")    # DELETE
+        logger.info("[DB UPDATE] Updated job_id and status in the database!")
 
     return job_id, status
 
@@ -246,8 +264,9 @@ def clean_sulfur_from_smiles_string(input_smiles, idx=0):
 
 
 
-
-
+##########################
+# DELETE THESE FUNCTIONS #
+##########################
 
 def predict_property_api(property):
     """[Dummy] # DELETE
