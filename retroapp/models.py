@@ -14,6 +14,7 @@ class QueryDB(models.Model):
     Email = models.CharField(max_length=100, blank=True, null=True)
     Q_smiles = models.CharField(max_length=2000, blank=True, null=True)
     Q_notes = models.CharField(max_length=2000, blank=True, null=True)
+    Q_Task_id = models.CharField(max_length=200, blank=True, null=True)
     Q_Job_id = models.CharField(max_length=200, blank=True, null=True)
     Q_Status = models.CharField(max_length=50, blank=True, null=True)    # Choices: SUCCESS | FAILED | SUBMITTED - to be pulled from slurm status API.
 
