@@ -129,7 +129,10 @@ DATABASES = {
         'PORT': db_config['PORT'],
         'OPTIONS': {
             # TODO: confirm that using NO_AUTO_VALUE_ON_ZERO is okay.
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO'"
+            # 'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO'; SET GLOBAL connect_timeout=30; SET GLOBAL net_read_timeout=60;",    # The 2nd and 3rd command need SUPER mysql priviledges to modify global variables.
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO';",
+            'connect_timeout': 30,
+            # 'net_read_timeout': 60,
          }   
     }
 }
