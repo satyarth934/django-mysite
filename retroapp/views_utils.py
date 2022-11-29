@@ -35,15 +35,23 @@ def is_user_authenticated(request):
     Returns:
         bool: True if the user is authenticated and from the accepted domain, False otherwise.
     """
-    login_authentication = request.user.is_authenticated
 
-    if not login_authentication:
-        return login_authentication
+    num_tries = 5
+    for i in range(num_tries):
+        try:
+            login_authentication = request.user.is_authenticated
 
-    user_email = request.user.socialaccount_set.all()[0].extra_data['email']
-    domain_authentication = user_email.split("@")[-1] in settings.SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS
+            if not login_authentication:
+                return login_authentication
 
-    return (login_authentication and domain_authentication)
+            user_email = request.user.socialaccount_set.all()[0].extra_data['email']
+            domain_authentication = user_email.split("@")[-1] in settings.SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS
+
+            return (login_authentication and domain_authentication)
+        except django.db.utils.OperationalError as dj_op:
+            logger.warn(f"Attempting again ({i}/{num_tries}) because of the following error: {dj_oe}")
+
+    logger.error(f"Failed even after {num_tries} attempts. {dj_oe}")
 
 
 @utils.log_function
